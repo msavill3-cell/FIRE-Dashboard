@@ -1,0 +1,2125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Saville Family FIRE Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0f0f1a; color: #e0e0f0; min-height: 100vh; }
+
+    /* Nav */
+    nav { background: #1a1a2e; border-bottom: 1px solid #2a2a4a; padding: 0 24px; display: flex; align-items: center; gap: 0; }
+    nav .logo { font-size: 18px; font-weight: 700; color: #7c83fd; padding: 16px 0; margin-right: 32px; }
+    nav .logo span { color: #e0e0f0; }
+    .nav-tabs { display: flex; gap: 0; }
+    .nav-tab { padding: 18px 20px; font-size: 13px; font-weight: 500; cursor: pointer; border-bottom: 2px solid transparent; color: #888; transition: all 0.2s; white-space: nowrap; }
+    .nav-tab:hover { color: #c0c0e0; }
+    .nav-tab.active { color: #7c83fd; border-bottom-color: #7c83fd; }
+
+    /* Layout */
+    .page { display: none; padding: 28px 32px; max-width: 1400px; margin: 0 auto; }
+    .page.active { display: block; }
+
+    /* Cards */
+    .card { background: #1a1a2e; border: 1px solid #2a2a4a; border-radius: 12px; padding: 24px; }
+    .card-title { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: #666; margin-bottom: 8px; }
+    .card-value { font-size: 32px; font-weight: 700; color: #e0e0f0; }
+    .card-sub { font-size: 13px; color: #888; margin-top: 4px; }
+    .card-positive { color: #4ade80; }
+    .card-warning { color: #fbbf24; }
+    .card-negative { color: #f87171; }
+
+    /* Grid layouts */
+    .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px; }
+    @media (max-width: 900px) {
+      .grid-4 { grid-template-columns: 1fr 1fr; }
+      .grid-2 { grid-template-columns: 1fr; }
+      .grid-3 { grid-template-columns: 1fr; }
+    }
+
+    /* Progress bar */
+    .progress-wrapper { margin: 20px 0; }
+    .progress-label { display: flex; justify-content: space-between; font-size: 13px; color: #888; margin-bottom: 8px; }
+    .progress-bar { height: 12px; background: #2a2a4a; border-radius: 6px; overflow: hidden; }
+    .progress-fill { height: X%; border-radius: 6px; background: linear-gradient(90deg, #7c83fd, #a78bfa); transition: width 0.5s ease; }
+
+    /* Section headers */
+    .section-header { font-size: 18px; font-weight: 700; color: #e0e0f0; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid #2a2a4a; }
+
+    /* Chart containers */
+    .chart-container { position: relative; height: 320px; }
+    .chart-container-sm { position: relative; height: 240px; }
+
+    /* Tables */
+    table { width: X%; border-collapse: collapse; font-size: 14px; }
+    th { text-align: left; padding: 10px 14px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: #666; border-bottom: 1px solid #2a2a4a; }
+    td { padding: 11px 14px; border-bottom: 1px solid #1e1e38; color: #c0c0e0; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #1e1e38; }
+    .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+    .badge-green { background: #14532d; color: #4ade80; }
+    .badge-yellow { background: #451a03; color: #fbbf24; }
+    .badge-red { background: #450a0a; color: #f87171; }
+    .badge-blue { background: #172554; color: #60a5fa; }
+    .badge-purple { background: #2e1065; color: #c084fc; }
+
+    /* Input controls */
+    .inputs-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px; }
+    @media (max-width: 900px) { .inputs-grid { grid-template-columns: 1fr; } }
+    .input-group { display: flex; flex-direction: column; gap: 6px; }
+    .input-group label { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: #888; }
+    .input-group input, .input-group select {
+      background: #0f0f1a; border: 1px solid #2a2a4a; border-radius: 8px;
+      padding: 10px 14px; color: #e0e0f0; font-size: 15px; font-family: inherit;
+      outline: none; transition: border-color 0.2s;
+    }
+    .input-group input:focus, .input-group select:focus { border-color: #7c83fd; }
+    .input-group input[type="range"] { padding: 0; background: none; border: none; cursor: pointer; }
+    .range-value { font-size: 15px; font-weight: 600; color: #7c83fd; }
+    .btn { background: #7c83fd; color: #fff; border: none; border-radius: 8px; padding: 12px 24px; font-size: 14px; font-weight: 600; cursor: pointer; transition: opacity 0.2s; }
+    .btn:hover { opacity: 0.85; }
+
+    /* Alert box */
+    .alert { background: #1e1a38; border: 1px solid #4a3a7a; border-radius: 10px; padding: 16px 20px; margin-bottom: 20px; display: flex; gap: 12px; align-items: flex-start; }
+    .alert-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+    .alert-text { font-size: 14px; line-height: 1.6; color: #c0c0e0; }
+    .alert-text strong { color: #e0e0f0; }
+
+    /* Allocation bars */
+    .alloc-row { margin-bottom: 14px; }
+    .alloc-label { display: flex; justify-content: space-between; font-size: 13px; color: #c0c0e0; margin-bottom: 5px; }
+    .alloc-bar { height: 8px; background: #2a2a4a; border-radius: 4px; overflow: hidden; }
+    .alloc-fill { height: X%; border-radius: 4px; }
+
+    /* Scenario pills */
+    .scenario-pills { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+    .scenario-pill { padding: 8px 18px; border-radius: 20px; font-size: 13px; font-weight: 600; cursor: pointer; border: 2px solid transparent; transition: all 0.2s; }
+    .scenario-pill.conservative { background: #1a2a1a; color: #4ade80; border-color: #14532d; }
+    .scenario-pill.base { background: #1a1a2e; color: #7c83fd; border-color: #3730a3; }
+    .scenario-pill.optimistic { background: #2a1a1a; color: #fbbf24; border-color: #451a03; }
+    .scenario-pill.active { filter: brightness(1.4); }
+
+    /* Result highlight */
+    .result-highlight { background: linear-gradient(135deg, #1a1a3e, #1a2a2a); border: 1px solid #3a3a6a; border-radius: 12px; padding: 24px; text-align: center; }
+    .result-year { font-size: 64px; font-weight: 800; color: #7c83fd; line-height: 1; }
+    .result-label { font-size: 15px; color: #888; margin-top: 6px; }
+    .result-age { font-size: 20px; color: #a78bfa; margin-top: 8px; font-weight: 600; }
+
+    /* Ticker strip */
+    .ticker { background: #13131f; border-top: 1px solid #2a2a4a; border-bottom: 1px solid #2a2a4a; padding: 8px 32px; font-size: 13px; color: #888; margin-bottom: 24px; }
+    .ticker strong { color: #7c83fd; margin-right: 6px; }
+    .ticker span { margin-right: 32px; }
+
+    /* Urgency banner */
+    .urgency-banner { background: linear-gradient(135deg, #2a1a0a, #1a0a0a); border: 1px solid #92400e; border-radius: 10px; padding: 16px 20px; margin-bottom: 20px; }
+    .urgency-banner h3 { color: #fbbf24; font-size: 14px; font-weight: 700; margin-bottom: 6px; }
+    .urgency-banner p { color: #c0a060; font-size: 13px; line-height: 1.6; }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">Saville <span>FIRE</span></div>
+  <div class="nav-tabs">
+    <div class="nav-tab active" onclick="showPage('dashboard')">Dashboard</div>
+    <div class="nav-tab" onclick="showPage('income')">Income</div>
+    <div class="nav-tab" onclick="showPage('calculator')">FIRE Calculator</div>
+    <div class="nav-tab" onclick="showPage('projection')">Projection</div>
+    <div class="nav-tab" onclick="showPage('scenarios')">Scenarios</div>
+    <div class="nav-tab" onclick="showPage('house')">Rent vs. Buy</div>
+    <div class="nav-tab" onclick="showPage('baby')">Baby Budget</div>
+    <div class="nav-tab" onclick="showPage('philosophy')">Investing Philosophy</div>
+    <div class="nav-tab" onclick="showPage('retirement')">Dream Retirement</div>
+    <div class="nav-tab" onclick="showPage('allocation')">Allocation</div>
+    <div class="nav-tab" onclick="showPage('accounts')">Accounts</div>
+  </div>
+</nav>
+
+<div class="ticker">
+  <span><strong>NW</strong> $X,XXX</span>
+  <span><strong>Target</strong> $X,XXX</span>
+  <span><strong>Progress</strong> X%</span>
+  <span><strong>12M Growth</strong> +X%</span>
+  <span><strong>Gross Income</strong> $X,XXX</span>
+  <span><strong>Savings Rate</strong> X% confirmed / X% w/ Roth</span>
+  <span><strong>Employee Stock Purchase Plan (ESPP) Deadline</strong> April 1, 2026 ⚡</span>
+</div>
+
+<!-- ======== PAGE: INCOME ======== -->
+<div id="page-income" class="page">
+  <div class="section-header">2025 Income & Savings Summary</div>
+
+  <div class="grid-4">
+    <div class="card">
+      <div class="card-title">Total Gross Income</div>
+      <div class="card-value">$X,XXX</div>
+      <div class="card-sub">You + Partner Employment Income + side income</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Confirmed Annual Savings</div>
+      <div class="card-value card-positive">$X,XXX</div>
+      <div class="card-sub">401K + Employee Stock Purchase Plan (ESPP) shares acquired</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Savings Rate</div>
+      <div class="card-value">X%</div>
+      <div class="card-sub card-positive">X% if Roth IRAs maxed</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Est. Monthly Take-Home</div>
+      <div class="card-value">$X,XXX</div>
+      <div class="card-sub">After tax, 401K & Employee Stock Purchase Plan (ESPP) deductions</div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="section-header">Income Breakdown</div>
+      <table>
+        <thead><tr><th>Source</th><th>Person</th><th>Amount</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td>Employment Income Salary</td><td>You</td><td>$X,XXX</td><td>Employer A</td></tr>
+          <tr><td>Employment Income Salary</td><td>Partner</td><td>$X,XXX</td><td>Employer B</td></tr>
+          <tr><td>Side Income</td><td>Partner</td><td>$X,XXX</td><td><span class="badge badge-yellow">Self-Employment / Self-Employed</span> Interior design consulting</td></tr>
+          <tr><td><strong>Total Gross</strong></td><td></td><td><strong>$X,XXX</strong></td><td></td></tr>
+        </tbody>
+      </table>
+
+      <div class="section-header" style="margin-top: 24px;">401(k) Contributions</div>
+      <table>
+        <thead><tr><th>Person</th><th>Contributed</th><th>2025 Limit</th><th>Headroom</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>You</td><td>$X,XXX</td><td>$X,XXX</td>
+            <td class="card-warning">$X,XXX left <span class="badge badge-yellow">Near max</span></td>
+          </tr>
+          <tr>
+            <td>Partner</td><td>$X,XXX</td><td>$X,XXX</td>
+            <td class="card-negative">$X,XXX left <span class="badge badge-red">Undercontributing</span></td>
+          </tr>
+          <tr><td><strong>Total</strong></td><td><strong>$X,XXX</strong></td><td>$X,XXX</td><td class="card-warning">$X,XXX unused</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="section-header">Employee Stock Purchase Plan (ESPP) — Employer A</div>
+      <table>
+        <thead><tr><th>Item</th><th>Value</th></tr></thead>
+        <tbody>
+          <tr><td>Payroll deduction rate</td><td>X% of Your salary</td></tr>
+          <tr><td>Annual deduction from paycheck</td><td>$X,XXX</td></tr>
+          <tr><td>Shares acquired (at X% price)</td><td class="card-positive">$X,XXX value</td></tr>
+          <tr><td>Instant gain (X% discount)</td><td class="card-positive">+$X,XXX</td></tr>
+          <tr><td>Effective annual return on deduction</td><td class="card-positive">~X%</td></tr>
+          <tr><td>Current Employer A stock held (total)</td><td>~$X,XXX</td></tr>
+          <tr><td>April 2026 Employee Stock Purchase Plan (ESPP) proceeds (est.)</td><td class="card-warning">~$X,XXX <span class="badge badge-red">Decide by Apr 1</span></td></tr>
+        </tbody>
+      </table>
+
+      <div class="section-header" style="margin-top: 24px;">Est. Tax Picture (2025, MFJ)</div>
+      <table>
+        <thead><tr><th>Item</th><th>Est. Amount</th></tr></thead>
+        <tbody>
+          <tr><td>Gross Income</td><td>$X,XXX</td></tr>
+          <tr><td>401K pre-tax deduction</td><td>−$X,XXX</td></tr>
+          <tr><td>Standard deduction (MFJ)</td><td>−$X,XXX</td></tr>
+          <tr><td>Est. federal taxable income</td><td>$X,XXX</td></tr>
+          <tr><td>Est. federal tax (~X% blend)</td><td class="card-negative">−$X,XXX</td></tr>
+          <tr><td>State Tax (X%)</td><td class="card-negative">−$X,XXX</td></tr>
+          <tr><td>FICA (Social Security + Medicare)</td><td class="card-negative">−$X,XXX</td></tr>
+          <tr><td><strong>Est. total tax burden</strong></td><td class="card-negative"><strong>−$X,XXX</strong></td></tr>
+          <tr><td><strong>Est. annual take-home</strong></td><td class="card-positive"><strong>$X,XXX</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="alert" style="margin-top: 4px;">
+    <div class="alert-icon">💡</div>
+    <div class="alert-text">
+      <strong>Biggest opportunity: Partner's 401K.</strong> She contributed $X,XXX but the 2025 limit is $X,XXX — leaving $X,XXX of tax-advantaged space unused. Increasing her contribution rate at Employer B/Payroll Platform/Employer D would reduce taxable income by up to $X,XXX and accelerate FIRE by ~1 year. <br/><br/>
+      <strong>Partner's $X,XXXK side income</strong> is likely self-employment income (Self-Employment). She should set aside ~25–X% for taxes (~$X,XXX–$X,XXX) and can deduct business expenses. She may also be able to open a Solo 401K or SEP-IRA on that income for additional tax-advantaged savings.
+    </div>
+  </div>
+
+  <div class="card" style="margin-top: 0;">
+    <div class="section-header">Monthly Cash Flow Estimate</div>
+    <table>
+      <thead><tr><th>Item</th><th>Monthly</th><th>Annual</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td>Take-home pay</td><td class="card-positive">+$X,XXX</td><td>+$X,XXX</td><td>After tax, 401K, Employee Stock Purchase Plan (ESPP) deductions</td></tr>
+        <tr><td>Total spending (actual)</td><td class="card-negative">−$X,XXX</td><td>−$X,XXX</td><td>Target; sometimes $X,XXXK. Includes rent, food, travel, etc.</td></tr>
+        <tr><td>&nbsp;&nbsp;↳ of which: Rent</td><td class="card-negative">−$X,XXX</td><td>−$X,XXX</td><td>Your City, State</td></tr>
+        <tr><td>&nbsp;&nbsp;↳ of which: Everything else</td><td class="card-negative">−$X,XXX</td><td>−$X,XXX</td><td>Food, travel, entertainment, etc.</td></tr>
+        <tr><td><strong>Monthly surplus (renting)</strong></td><td class="card-positive"><strong>+$X,XXX</strong></td><td><strong>+$X,XXX</strong></td><td>Available for investing, Roth, savings</td></tr>
+        <tr><td>Roth IRA (both, if maxed)</td><td class="card-warning">−$X,XXX</td><td>−$X,XXX</td><td><strong>Recommended</strong> — $X,XXXK/person/yr</td></tr>
+        <tr><td><strong>After Roth IRAs</strong></td><td class="card-positive"><strong>+$X,XXX</strong></td><td><strong>+$X,XXX</strong></td><td>Still significant discretionary / travel budget</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ======== PAGE: DASHBOARD ======== -->
+<div id="page-dashboard" class="page active">
+
+  <div class="urgency-banner">
+    <h3>⚡ Action Required by April 1, 2026</h3>
+    <p>Employer A Employee Stock Purchase Plan (ESPP) decision: ~$X,XXXK in NKE shares. Recommended: Sell → pay off $X,XXX credit card debt (guaranteed ~X% return). Log into Brokerage A Your 401K Portal to confirm purchase date and cost basis.</p>
+  </div>
+
+  <div class="grid-4">
+    <div class="card">
+      <div class="card-title">Net Worth</div>
+      <div class="card-value">$X,XXX</div>
+      <div class="card-sub card-positive">▲ +X% trailing 12 months (excl. RH)</div>
+    </div>
+    <div class="card">
+      <div class="card-title">FIRE Target</div>
+      <div class="card-value">$X,XXX</div>
+      <div class="card-sub">X% rule → $X,XXXK/year income</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Gap to FIRE</div>
+      <div class="card-value card-warning">$X,XXX</div>
+      <div class="card-sub">X% of the way there</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Projected FIRE Year</div>
+      <div class="card-value" id="dash-fire-year">XXXX</div>
+      <div class="card-sub" id="dash-fire-age">You [Age], Partner [Age]</div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom: 24px;">
+    <div class="card-title">Progress to $X,XXXM FIRE Goal</div>
+    <div class="progress-wrapper">
+      <div class="progress-label">
+        <span>$X,XXX</span>
+        <span id="progress-pct">X% — $X,XXX</span>
+        <span>$X,XXX</span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" id="progress-bar" style="width: X%"></div>
+      </div>
+    </div>
+    <div style="font-size: 13px; color: #888; margin-top: 8px;">Based on X% average annual return and $X,XXX/year confirmed savings (401K + Employee Stock Purchase Plan (ESPP)). Excludes any Roth IRA or brokerage contributions. You [Age] (turns [Age] in May), Partner [Age].</div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="section-header">Portfolio by Asset Class</div>
+      <div class="chart-container">
+        <canvas id="chart-donut"></canvas>
+      </div>
+    </div>
+    <div class="card">
+      <div class="section-header">Net Worth Growth Projection</div>
+      <div class="chart-container">
+        <canvas id="chart-growth"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid-3">
+    <div class="card">
+      <div class="card-title">401(k) Total</div>
+      <div class="card-value">$X,XXX</div>
+      <div class="card-sub">X% of portfolio</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Roth IRA Total</div>
+      <div class="card-value">$X,XXX</div>
+      <div class="card-sub">You + Partner Index Fund Provider</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Brokerage + Stocks</div>
+      <div class="card-value">$X,XXX</div>
+      <div class="card-sub">Taxable accounts</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Crypto</div>
+      <div class="card-value">$X,XXX</div>
+      <div class="card-sub card-warning">BTC, ETH, XRP, SOL + more</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Cash & Savings</div>
+      <div class="card-value">$X,XXX</div>
+      <div class="card-sub">Excl. $X,XXXK house fund</div>
+    </div>
+    <div class="card">
+      <div class="card-title">House Fund</div>
+      <div class="card-value">$X,XXX</div>
+      <div class="card-sub card-warning">Earmarked — do not invest</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ======== PAGE: FIRE CALCULATOR ======== -->
+<div id="page-calculator" class="page">
+  <div class="section-header">FIRE Calculator — Inputs</div>
+
+  <div class="card" style="margin-bottom: 24px;">
+    <div class="inputs-grid">
+      <div class="input-group">
+        <label>Current Net Worth ($)</label>
+        <input type="number" id="inp-nw" value="0" />
+      </div>
+      <div class="input-group">
+        <label>Annual Savings Contribution ($)</label>
+        <input type="number" id="inp-savings" value="0" />
+      </div>
+      <div class="input-group">
+        <label>Target Retirement Spending ($/year)</label>
+        <input type="number" id="inp-spend" value="0" title="Current spend is $X,XXXK/yr; $X,XXXK target allows for travel and lifestyle growth in retirement" />
+      </div>
+      <div class="input-group">
+        <label>Expected Annual Return: <span class="range-value" id="lbl-return">X%</span></label>
+        <input type="range" id="inp-return" min="3" max="12" step="0.5" value="7" oninput="document.getElementById('lbl-return').textContent = this.value + '%'" />
+      </div>
+      <div class="input-group">
+        <label>Inflation Rate: <span class="range-value" id="lbl-inflation">X%</span></label>
+        <input type="range" id="inp-inflation" min="1" max="6" step="0.5" value="3" oninput="document.getElementById('lbl-inflation').textContent = this.value + '%'" />
+      </div>
+      <div class="input-group">
+        <label>Safe Withdrawal Rate: <span class="range-value" id="lbl-swr">X%</span></label>
+        <input type="range" id="inp-swr" min="2" max="6" step="0.1" value="4" oninput="document.getElementById('lbl-swr').textContent = parseFloat(this.value).toFixed(1) + '%'" />
+      </div>
+      <div class="input-group">
+        <label>Your Current Age</label>
+        <input type="number" id="inp-age-mike" value="37" />
+      </div>
+      <div class="input-group">
+        <label>Partner's Current Age</label>
+        <input type="number" id="inp-age-hadley" value="37" />
+      </div>
+      <div class="input-group" style="align-items: flex-end;">
+        <label>&nbsp;</label>
+        <button class="btn" onclick="recalculate()">Recalculate</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid-3">
+    <div class="result-highlight">
+      <div class="result-year" id="calc-fire-year">XXXX</div>
+      <div class="result-label">Projected FIRE Year</div>
+      <div class="result-age" id="calc-fire-age">You [Age], Partner [Age]</div>
+    </div>
+    <div class="card">
+      <div class="card-title">FIRE Number (at SWR)</div>
+      <div class="card-value" id="calc-fire-number">$X,XXX</div>
+      <div class="card-sub" id="calc-fire-number-sub">$X,XXXK ÷ X% SWR</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Years to FIRE</div>
+      <div class="card-value" id="calc-years">16</div>
+      <div class="card-sub">From today (2026)</div>
+    </div>
+  </div>
+
+  <div class="grid-2" style="margin-top: 24px;">
+    <div class="card">
+      <div class="card-title">Real (Inflation-Adjusted) Return</div>
+      <div class="card-value" id="calc-real-return">X%</div>
+      <div class="card-sub">Nominal return minus inflation</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Monthly Savings Implied</div>
+      <div class="card-value" id="calc-monthly">$X,XXX</div>
+      <div class="card-sub">401K + Employee Stock Purchase Plan (ESPP), annual ÷ 12</div>
+    </div>
+  </div>
+</div>
+
+<!-- ======== PAGE: PROJECTION ======== -->
+<div id="page-projection" class="page">
+  <div class="section-header">Year-by-Year Projection</div>
+  <div class="card" style="margin-bottom: 24px;">
+    <div class="chart-container" style="height: 360px;">
+      <canvas id="chart-projection"></canvas>
+    </div>
+  </div>
+  <div class="card">
+    <table>
+      <thead>
+        <tr>
+          <th>Year</th>
+          <th>Your Age</th>
+          <th>Portfolio Value</th>
+          <th>Investment Growth</th>
+          <th>Annual Contribution</th>
+          <th>vs. FIRE Goal</th>
+        </tr>
+      </thead>
+      <tbody id="projection-table"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ======== PAGE: HOUSE ======== -->
+<div id="page-house" class="page">
+  <div class="section-header">Rent vs. Buy Analysis — Your City, State</div>
+
+  <div class="grid-4">
+    <div class="card">
+      <div class="card-title">Home Price</div>
+      <div class="card-value">$X,XXX</div>
+      <div class="card-sub">Target in Your City, State</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Down Payment</div>
+      <div class="card-value">$X,XXX</div>
+      <div class="card-sub">Gift from family member — ready</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Monthly PITI (Buy)</div>
+      <div class="card-value card-warning">$X,XXX</div>
+      <div class="card-sub">vs. $X,XXX/mo renting today</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Extra Monthly Cost</div>
+      <div class="card-value card-negative">+$X,XXX</div>
+      <div class="card-sub">$X,XXX more per year vs. renting</div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="section-header">Monthly Cost Breakdown</div>
+      <table>
+        <thead><tr><th>Item</th><th>Renting</th><th>Buying</th></tr></thead>
+        <tbody>
+          <tr><td>Mortgage P&I (X%, 30yr)</td><td>—</td><td class="card-warning">$X,XXX</td></tr>
+          <tr><td>Property Tax (~X%/yr)</td><td>—</td><td class="card-warning">$X,XXX</td></tr>
+          <tr><td>Homeowner's Insurance</td><td>—</td><td class="card-warning">$X,XXX</td></tr>
+          <tr><td>Rent</td><td class="card-negative">$X,XXX</td><td>—</td></tr>
+          <tr><td>PMI</td><td>—</td><td class="card-positive">$X,XXX (X%+ down)</td></tr>
+          <tr><td><strong>Total Housing Cost</strong></td><td><strong>$X,XXX</strong></td><td><strong class="card-warning">$X,XXX</strong></td></tr>
+          <tr><td>Non-housing spend</td><td>$X,XXX</td><td>$X,XXX</td></tr>
+          <tr><td><strong>Total Monthly Spend</strong></td><td><strong>$X,XXX</strong></td><td><strong class="card-warning">$X,XXX</strong></td></tr>
+          <tr><td>Take-home pay</td><td>$X,XXX</td><td>$X,XXX</td></tr>
+          <tr><td><strong>Monthly Surplus</strong></td><td class="card-positive"><strong>$X,XXX</strong></td><td class="card-positive"><strong>$X,XXX</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="section-header">What You Get for the Extra $X,XXX/mo</div>
+      <table>
+        <thead><tr><th>Benefit of Buying</th><th>Est. Monthly Value</th></tr></thead>
+        <tbody>
+          <tr><td>Home appreciation (Your City avg ~X%/yr on $X,XXXK)</td><td class="card-positive">+$X,XXX</td></tr>
+          <tr><td>Principal paydown (yr 1 avg)</td><td class="card-positive">+$X,XXX</td></tr>
+          <tr><td>Mortgage interest deduction (est.)</td><td class="card-positive">+$X,XXX</td></tr>
+          <tr><td><strong>Total monthly equity/wealth build</strong></td><td class="card-positive"><strong>+$X,XXX</strong></td></tr>
+          <tr><td>Net cost vs. renting (after equity build)</td><td class="card-warning"><strong>−$X,XXX/mo</strong></td></tr>
+        </tbody>
+      </table>
+      <div style="margin-top:16px; font-size:13px; color:#888; line-height:1.7;">
+        <strong style="color:#c0c0e0">The real question:</strong> Is $X,XXX/month of true extra cost worth the stability, space, and quality of life — especially with a growing family? On these numbers, buying is closer than it looks once appreciation is factored in.
+      </div>
+    </div>
+  </div>
+
+  <div class="section-header" style="margin-top: 24px;">FIRE Date Impact</div>
+  <div class="grid-3">
+    <div class="card" style="border-color: #4ade8055;">
+      <div class="card-title">Keep Renting</div>
+      <div class="card-value card-positive">XXXX</div>
+      <div class="card-sub">You [Age], Partner [Age]</div>
+      <div style="margin-top:12px; font-size:13px; color:#888; line-height:1.6;">
+        $X,XXXK house fund stays invested at X%. Full $X,XXX/yr savings. Fastest path to FIRE on paper.
+      </div>
+    </div>
+    <div class="card" style="border-color: #fbbf2455;">
+      <div class="card-title">Buy the House</div>
+      <div class="card-value card-warning">XXXX</div>
+      <div class="card-sub">You [Age], Partner [Age]</div>
+      <div style="margin-top:12px; font-size:13px; color:#888; line-height:1.6;">
+        $X,XXXK down payment deployed. Savings drop to ~$X,XXX/yr due to higher housing cost. FIRE pushed back ~4 years.
+      </div>
+    </div>
+    <div class="card" style="border-color: #a78bfa55;">
+      <div class="card-title">Buy + Count Home Equity</div>
+      <div class="card-value" style="color:#a78bfa">XXXX</div>
+      <div class="card-sub">You [Age], Partner [Age]</div>
+      <div style="margin-top:12px; font-size:13px; color:#888; line-height:1.6;">
+        When home appreciation (~X%/yr) and principal paydown are counted as wealth-building, the gap narrows to just 1 year vs. renting.
+      </div>
+    </div>
+  </div>
+
+  <div class="section-header" style="margin-top: 24px;">Opportunity Cost of the $X,XXXK Down Payment</div>
+  <div class="card" style="margin-bottom: 24px;">
+    <div class="chart-container-sm">
+      <canvas id="chart-house"></canvas>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="section-header">The Case for Renting</div>
+      <table>
+        <tbody>
+          <tr><td>✅ $X,XXXK invested @ X% grows to <strong>$X,XXXK by XXXX</strong></td></tr>
+          <tr><td>✅ $X,XXX/mo surplus — plenty of room for Roth IRAs, travel, Family Planning</td></tr>
+          <tr><td>✅ Flexibility — can move for better job, neighborhood, school district</td></tr>
+          <tr><td>✅ No maintenance costs (roof, HVAC, unexpected repairs avg $X,XXX–15K/yr on $X,XXXK home)</td></tr>
+          <tr><td>✅ FIRE 4 years earlier (without equity credit)</td></tr>
+          <tr><td>⚠️ No equity building, rent can rise, landlord can sell</td></tr>
+          <tr><td>⚠️ Less stability with a young child</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="card">
+      <div class="section-header">The Case for Buying</div>
+      <table>
+        <tbody>
+          <tr><td>✅ Stability and permanence — important with kids</td></tr>
+          <tr><td>✅ Your City, State home values historically appreciate — locking in $X,XXXK may look cheap later</td></tr>
+          <tr><td>✅ Mortgage payment is fixed; rent will keep rising</td></tr>
+          <tr><td>✅ $X,XXXK gift is earmarked for this — using it as intended</td></tr>
+          <tr><td>✅ Net true cost only ~$X,XXX/mo more than renting after equity build</td></tr>
+          <tr><td>⚠️ $X,XXX/mo total spend is tight with current budget</td></tr>
+          <tr><td>⚠️ Maintenance, unexpected costs on top of PITI</td></tr>
+          <tr><td>⚠️ Interest rates may drop — refinancing opportunity within 1–2 yrs</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="alert" style="margin-top: 4px;">
+    <div class="alert-icon">💡</div>
+    <div class="alert-text">
+      <strong>Bottom line:</strong> Financially, renting wins by a small margin on paper — but only by ~1 year when home equity is counted. The real decision factors are lifestyle: <strong>stability for your growing family, school districts, and quality of life in a home you own</strong>. At $X,XXXK household income, you can afford to buy — it just requires spending $X,XXX/mo instead of $X,XXX which is still well within your means. One major wildcard: <strong>if rates drop to ~X% in the next 1–2 years, refinancing would save ~$X,XXX/mo</strong>, dramatically improving the math.
+    </div>
+  </div>
+</div>
+
+<!-- ======== PAGE: SCENARIOS ======== -->
+<div id="page-scenarios" class="page">
+  <div class="section-header">Scenario Analysis</div>
+
+  <div class="scenario-pills">
+    <div class="scenario-pill conservative active" onclick="toggleScenario('conservative', this)">Conservative (X% return)</div>
+    <div class="scenario-pill base active" onclick="toggleScenario('base', this)">Base Case (X% return)</div>
+    <div class="scenario-pill optimistic active" onclick="toggleScenario('optimistic', this)">Optimistic (X% return)</div>
+  </div>
+
+  <div class="card" style="margin-bottom: 24px;">
+    <div class="chart-container" style="height: 360px;">
+      <canvas id="chart-scenarios"></canvas>
+    </div>
+  </div>
+
+  <div class="grid-3">
+    <div class="card">
+      <div class="card-title">Conservative (X%)</div>
+      <div class="card-value" id="scen-conservative-year">—</div>
+      <div class="card-sub" id="scen-conservative-age">—</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Base Case (X%)</div>
+      <div class="card-value" id="scen-base-year">—</div>
+      <div class="card-sub" id="scen-base-age">—</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Optimistic (X%)</div>
+      <div class="card-value" id="scen-optimistic-year">—</div>
+      <div class="card-sub" id="scen-optimistic-age">—</div>
+    </div>
+  </div>
+
+  <div class="section-header" style="margin-top: 24px;">Life Events Impact</div>
+  <div class="card">
+    <table>
+      <thead>
+        <tr>
+          <th>Event</th>
+          <th>Estimated Cost</th>
+          <th>Impact on FIRE Year</th>
+          <th>Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Family Planning (1 cycle)</td>
+          <td>~$X,XXX (deductible only)</td>
+          <td class="card-positive">Minimal — &lt;0.1 years</td>
+          <td><span class="badge badge-green">Insurance covered</span> Health plan covers Family Planning after deductible (~$X,XXXK out-of-pocket max per year). Huge win.</td>
+        </tr>
+        <tr>
+          <td>Home Purchase</td>
+          <td>$X,XXXK down (funded)</td>
+          <td class="card-warning">+1–2 years</td>
+          <td>Mortgage replaces rent; house fund from family member</td>
+        </tr>
+        <tr>
+          <td>Employee Stock Purchase Plan (ESPP) Payoff (CC Debt)</td>
+          <td>$X,XXX wiped</td>
+          <td class="card-positive">−0.3 years</td>
+          <td>Guaranteed ~X% return; strongly recommended</td>
+        </tr>
+        <tr>
+          <td>Employee Stock Purchase Plan (ESPP) → Diversify</td>
+          <td>~$X,XXXK reinvested</td>
+          <td class="card-positive">−0.3 years</td>
+          <td>Reduces NKE concentration risk</td>
+        </tr>
+        <tr>
+          <td>Child (ongoing costs)</td>
+          <td>~$X,XXXK–$X,XXXK/year</td>
+          <td class="card-negative">+2–4 years</td>
+          <td>Estimate; depends on childcare, schooling choices</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ======== PAGE: BABY BUDGET ======== -->
+<div id="page-baby" class="page">
+  <div class="section-header">Baby Budget Planner — Your City, State</div>
+
+  <div class="alert" style="background:#1a2e1a; border-color:#14532d;">
+    <div class="alert-icon">✅</div>
+    <div class="alert-text">
+      <strong>Good news on Family Planning:</strong> Insurance covers it after your ~$X,XXXK deductible. And on these numbers, you stay <strong>cash-flow positive in every phase of parenthood</strong> — even the most expensive early child phase leaves $X,XXX/month surplus. You can absolutely afford this.
+    </div>
+  </div>
+
+  <div class="grid-4">
+    <div class="card">
+      <div class="card-title">One-Time Setup Cost</div>
+      <div class="card-value">$X,XXX</div>
+      <div class="card-sub">Nursery, gear, clothes, medical</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Infant Year (Monthly Add)</div>
+      <div class="card-value card-warning">+$X,XXX</div>
+      <div class="card-sub">Daycare + food + health + misc</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Monthly Surplus (Infant Year)</div>
+      <div class="card-value card-positive">$X,XXX</div>
+      <div class="card-sub">Still positive — you're okay</div>
+    </div>
+    <div class="card">
+      <div class="card-title">FIRE Impact</div>
+      <div class="card-value card-warning">+2 years</div>
+      <div class="card-sub">XXXX → XXXX with one child</div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="section-header">Cost by Phase</div>
+      <table>
+        <thead>
+          <tr><th>Phase</th><th>Age</th><th>Childcare</th><th>Total/mo</th><th>New Spend</th><th>Surplus</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Infant</td><td>0–1</td><td class="card-negative">$X,XXX</td>
+            <td class="card-warning">+$X,XXX</td><td>$X,XXX</td>
+            <td class="card-positive">$X,XXX</td>
+          </tr>
+          <tr>
+            <td>Toddler</td><td>1–3</td><td class="card-negative">$X,XXX</td>
+            <td class="card-warning">+$X,XXX</td><td>$X,XXX</td>
+            <td class="card-positive">$X,XXX</td>
+          </tr>
+          <tr>
+            <td>Preschool</td><td>3–5</td><td class="card-warning">$X,XXX</td>
+            <td class="card-warning">+$X,XXX</td><td>$X,XXX</td>
+            <td class="card-positive">$X,XXX</td>
+          </tr>
+          <tr>
+            <td>School Age</td><td>5+</td><td class="card-positive">$X,XXX</td>
+            <td>+$X,XXX</td><td>$X,XXX</td>
+            <td class="card-positive">$X,XXX</td>
+          </tr>
+        </tbody>
+      </table>
+      <div style="font-size:12px;color:#666;margin-top:10px;">Your City, State infant daycare avg ~$X,XXX/mo. Drops significantly once school-age after-care replaces full daycare.</div>
+    </div>
+
+    <div class="card">
+      <div class="section-header">Monthly Cash Flow — Infant Year</div>
+      <div class="chart-container-sm">
+        <canvas id="chart-baby-cashflow"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-header" style="margin-top:24px;">One-Time Setup Costs</div>
+  <div class="grid-3">
+    <div class="card">
+      <div class="card-title">Nursery & Furniture</div>
+      <div class="card-value">$X,XXX</div>
+      <div class="card-sub">Crib, dresser, glider, decor</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Stroller & Gear</div>
+      <div class="card-value">$X,XXX</div>
+      <div class="card-sub">Stroller, car seat, carrier, bouncer</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Clothes, Medical & Misc</div>
+      <div class="card-value">$X,XXX</div>
+      <div class="card-sub">Newborn wardrobe, pediatric visits, monitor</div>
+    </div>
+  </div>
+
+  <div class="section-header" style="margin-top:24px;">Tax Breaks & Money-Savers</div>
+  <div class="card" style="margin-bottom:24px;">
+    <table>
+      <thead><tr><th>Benefit</th><th>Amount</th><th>How to Use</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>Child Tax Credit</td>
+          <td class="card-positive">$X,XXX/child/yr</td>
+          <td>Automatic on tax return — phases out above $X,XXXK MAGI (you qualify)</td>
+        </tr>
+        <tr>
+          <td>Dependent Care FSA</td>
+          <td class="card-positive">Up to $X,XXX/yr pre-tax</td>
+          <td>Enroll through Employer A/Employer B during open enrollment — saves ~$X,XXX/yr in taxes</td>
+        </tr>
+        <tr>
+          <td>Federal Child & Dependent Care Credit</td>
+          <td class="card-positive">~$X,XXX/yr</td>
+          <td>For childcare expenses above FSA — Form 2441</td>
+        </tr>
+        <tr>
+          <td>MA State Credit (X% of federal)</td>
+          <td class="card-positive">~$X,XXX/yr</td>
+          <td>Automatic on Your State return</td>
+        </tr>
+        <tr>
+          <td><strong>Total annual tax savings</strong></td>
+          <td class="card-positive"><strong>~$X,XXX/yr</strong></td>
+          <td>Child Tax Credit + FSA savings + care credits</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section-header">Parental Leave</div>
+  <div class="grid-2" style="margin-bottom:24px;">
+    <div class="card">
+      <div class="section-header">MA Paid Family & Medical Leave (PFML)</div>
+      <table>
+        <tbody>
+          <tr><td>Duration</td><td><strong>Up to 12 weeks</strong> bonding leave</td></tr>
+          <tr><td>Pay rate</td><td>X% of wages up to $X,XXX/week</td></tr>
+          <tr><td>Estimated total benefit</td><td class="card-positive"><strong>~$X,XXX</strong></td></tr>
+          <tr><td>Who qualifies</td><td>Both You and Partner independently</td></tr>
+          <tr><td>Can be taken consecutively</td><td>Yes — stagger for up to 6 months covered</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="card">
+      <div class="section-header">Action Items Before Baby Arrives</div>
+      <table>
+        <tbody>
+          <tr><td>✅</td><td>Check Employer A HR policy for additional paid leave on top of State Paid Leave</td></tr>
+          <tr><td>✅</td><td>Enroll in Dependent Care FSA during next open enrollment ($X,XXXK/yr)</td></tr>
+          <tr><td>✅</td><td>Research Your City, State daycare waitlists — many have 12–18 month waits</td></tr>
+          <tr><td>✅</td><td>Add child to health insurance within 30 days of birth</td></tr>
+          <tr><td>✅</td><td>Open a 529 college savings plan at birth — [State] offers a tax deduction</td></tr>
+          <tr><td>✅</td><td>Update wills and beneficiary designations on all accounts</td></tr>
+          <tr><td>✅</td><td>Get term life insurance if not already covered (10–20x income)</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="section-header">FIRE Timeline — With vs. Without Child</div>
+    <div class="chart-container">
+      <canvas id="chart-baby-fire"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- ======== PAGE: PHILOSOPHY ======== -->
+<div id="page-philosophy" class="page">
+  <div class="section-header">Investing Philosophy — Your Personalized FIRE Roadmap</div>
+
+  <!-- CRITICAL ALERT -->
+  <div style="background:linear-gradient(135deg,#2a0a0a,#1a0a1a);border:2px solid #f87171;border-radius:12px;padding:20px 24px;margin-bottom:24px;">
+    <div style="font-size:15px;font-weight:700;color:#f87171;margin-bottom:10px;">🚨 Critical: You Cannot Make Direct Roth IRA Contributions</div>
+    <div style="font-size:14px;color:#c0a0a0;line-height:1.8;">
+      Your estimated MAGI is <strong style="color:#f87171;">$X,XXX</strong> — well above the 2025 MFJ Roth IRA phase-out limit of $X,XXX–$X,XXX.
+      Direct contributions to Roth IRA are <strong>not allowed</strong> at your income level.<br/><br/>
+      <strong style="color:#fbbf24;">The fix: Backdoor Roth IRA.</strong> This is X% legal and used by millions of high earners. Steps:
+      <ol style="margin-top:8px;margin-left:20px;line-height:2;">
+        <li>Contribute $X,XXX to a <strong>Traditional IRA</strong> (non-deductible — no tax deduction at your income)</li>
+        <li><strong>Immediately</strong> convert it to Roth IRA (within days, before any gains)</li>
+        <li>Report on Form 8606 — no tax owed if you have no other pre-tax Traditional IRA funds</li>
+        <li>⚠️ Check: You has a Robo-Advisor account ($X,XXX) — confirm it is Roth, not Traditional, to avoid Pro-Rata Rule</li>
+      </ol>
+      <strong style="color:#fbbf24;">Do this for both You and Partner = $X,XXX/yr into Roth tax-free.</strong>
+    </div>
+  </div>
+
+  <!-- PRIORITY LADDER -->
+  <div class="section-header">Your Personalized Priority Ladder</div>
+  <div style="margin-bottom:24px;">
+
+    <div style="display:flex;flex-direction:column;gap:10px;">
+
+      <!-- Step 1 -->
+      <div style="display:flex;align-items:stretch;gap:0;border-radius:10px;overflow:hidden;border:1px solid #f8717155;">
+        <div style="background:#f87171;color:#fff;font-weight:800;font-size:16px;padding:16px 20px;min-width:48px;display:flex;align-items:center;justify-content:center;">1</div>
+        <div style="background:#2a1a1a;padding:14px 20px;flex:1;">
+          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+            <div>
+              <div style="font-weight:700;color:#e0e0f0;font-size:14px;">Pay Off Credit Card Debt</div>
+              <div style="font-size:13px;color:#888;margin-top:3px;">$X,XXX at ~X% APR — guaranteed X% return. Use Employee Stock Purchase Plan (ESPP) proceeds April 1.</div>
+            </div>
+            <span class="badge badge-red" style="font-size:12px;padding:4px 12px;">Due April 1, 2026</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 2 -->
+      <div style="display:flex;align-items:stretch;gap:0;border-radius:10px;overflow:hidden;border:1px solid #fbbf2455;">
+        <div style="background:#fbbf24;color:#111;font-weight:800;font-size:16px;padding:16px 20px;min-width:48px;display:flex;align-items:center;justify-content:center;">2</div>
+        <div style="background:#2a1e0a;padding:14px 20px;flex:1;">
+          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+            <div>
+              <div style="font-weight:700;color:#e0e0f0;font-size:14px;">Get Every Dollar of Employer 401K Match</div>
+              <div style="font-size:13px;color:#888;margin-top:3px;">You: Employer A ~X% match ≈ $X,XXX/yr free. Partner: Confirm full match at Employer B/Payroll Platform/Employer D — never leave this on the table.</div>
+            </div>
+            <span class="badge badge-yellow">Confirm Partner's match</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 3 -->
+      <div style="display:flex;align-items:stretch;gap:0;border-radius:10px;overflow:hidden;border:1px solid #60a5fa55;">
+        <div style="background:#3b82f6;color:#fff;font-weight:800;font-size:16px;padding:16px 20px;min-width:48px;display:flex;align-items:center;justify-content:center;">3</div>
+        <div style="background:#0f1e2e;padding:14px 20px;flex:1;">
+          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+            <div>
+              <div style="font-weight:700;color:#e0e0f0;font-size:14px;">Build Emergency Fund to $X,XXX (3 months)</div>
+              <div style="font-size:13px;color:#888;margin-top:3px;">Currently $X,XXX in HYSA Provider HYSA — $X,XXX short of 3-month target. Keep in HYSA Provider (earning ~X%).</div>
+            </div>
+            <span class="badge badge-blue">$X,XXX gap</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 4 -->
+      <div style="display:flex;align-items:stretch;gap:0;border-radius:10px;overflow:hidden;border:1px solid #a78bfa55;">
+        <div style="background:#7c3aed;color:#fff;font-weight:800;font-size:16px;padding:16px 20px;min-width:48px;display:flex;align-items:center;justify-content:center;">4</div>
+        <div style="background:#1a1030;padding:14px 20px;flex:1;">
+          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+            <div>
+              <div style="font-weight:700;color:#e0e0f0;font-size:14px;">Check HSA Eligibility — Triple Tax Advantage</div>
+              <div style="font-size:13px;color:#888;margin-top:3px;">If Employer A or Employer B offers an HDHP plan: 2025 family HSA limit = $X,XXX. Tax deductible in, tax-free growth, tax-free medical withdrawals. Invest HSA in index funds.</div>
+            </div>
+            <span class="badge badge-purple">Check HR policy</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 5 -->
+      <div style="display:flex;align-items:stretch;gap:0;border-radius:10px;overflow:hidden;border:1px solid #a78bfa55;">
+        <div style="background:#6d28d9;color:#fff;font-weight:800;font-size:16px;padding:16px 20px;min-width:48px;display:flex;align-items:center;justify-content:center;">5</div>
+        <div style="background:#1a1030;padding:14px 20px;flex:1;">
+          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+            <div>
+              <div style="font-weight:700;color:#f87171;font-size:14px;">Backdoor Roth IRA — Both You & Your Partner ($X,XXX/yr)</div>
+              <div style="font-size:13px;color:#888;margin-top:3px;">Cannot do direct Roth at your income. Must use backdoor: contribute to Traditional IRA → immediately convert to Roth. Do at Index Fund Provider or Brokerage A. File Form 8606.</div>
+            </div>
+            <span class="badge badge-red">Action required</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 6 -->
+      <div style="display:flex;align-items:stretch;gap:0;border-radius:10px;overflow:hidden;border:1px solid #4ade8055;">
+        <div style="background:#16a34a;color:#fff;font-weight:800;font-size:16px;padding:16px 20px;min-width:48px;display:flex;align-items:center;justify-content:center;">6</div>
+        <div style="background:#0f2a1a;padding:14px 20px;flex:1;">
+          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+            <div>
+              <div style="font-weight:700;color:#e0e0f0;font-size:14px;">Max Both 401Ks ($X,XXX each = $X,XXX/yr)</div>
+              <div style="font-size:13px;color:#888;margin-top:3px;">You: $X,XXX ✅ (nearly maxed, $X,XXX left). Partner: $X,XXX ⚠️ — leaving $X,XXX of tax-free space unused. Increase her contribution rate at Employer B ASAP.</div>
+            </div>
+            <span class="badge badge-yellow">Partner: increase rate</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 7 -->
+      <div style="display:flex;align-items:stretch;gap:0;border-radius:10px;overflow:hidden;border:1px solid #22d3ee55;">
+        <div style="background:#0891b2;color:#fff;font-weight:800;font-size:16px;padding:16px 20px;min-width:48px;display:flex;align-items:center;justify-content:center;">7</div>
+        <div style="background:#0a1e24;padding:14px 20px;flex:1;">
+          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+            <div>
+              <div style="font-weight:700;color:#e0e0f0;font-size:14px;">Employee Stock Purchase Plan (ESPP) — Always Sell Immediately & Diversify</div>
+              <div style="font-size:13px;color:#888;margin-top:3px;">X% discount = instant X% return. Holding Employer A stock adds concentration risk (already have salary + $X,XXXK in NKE). Sell → VTSAX/VTI each offering period.</div>
+            </div>
+            <span class="badge badge-green">Sell on purchase date</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 8 -->
+      <div style="display:flex;align-items:stretch;gap:0;border-radius:10px;overflow:hidden;border:1px solid #22d3ee44;">
+        <div style="background:#0e7490;color:#fff;font-weight:800;font-size:16px;padding:16px 20px;min-width:48px;display:flex;align-items:center;justify-content:center;">8</div>
+        <div style="background:#0a1e24;padding:14px 20px;flex:1;">
+          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+            <div>
+              <div style="font-weight:700;color:#e0e0f0;font-size:14px;">Advanced Roth Strategy (Check Employer A Plan)</div>
+              <div style="font-size:13px;color:#888;margin-top:3px;">IRS 415(c) limit = $X,XXX total. You're only using $X,XXX. If Employer A allows after-tax contributions + in-plan Roth conversion, you could shelter up to $X,XXX MORE per year in Roth.</div>
+            </div>
+            <span class="badge badge-purple">Check Your 401K Portal</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 9 -->
+      <div style="display:flex;align-items:stretch;gap:0;border-radius:10px;overflow:hidden;border:1px solid #4ade8033;">
+        <div style="background:#1d4ed8;color:#fff;font-weight:800;font-size:16px;padding:16px 20px;min-width:48px;display:flex;align-items:center;justify-content:center;">9</div>
+        <div style="background:#0f1e30;padding:14px 20px;flex:1;">
+          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+            <div>
+              <div style="font-weight:700;color:#e0e0f0;font-size:14px;">Taxable Brokerage — Invest Surplus in Index Funds</div>
+              <div style="font-size:13px;color:#888;margin-top:3px;">After all tax-advantaged accounts are maxed, invest remaining surplus in VTI/VXUS/BND in taxable brokerage. Consolidate 50 Brokerage App positions over time via tax-loss harvesting.</div>
+            </div>
+            <span class="badge badge-blue">Ongoing</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- TARGET ALLOCATION from book -->
+  <div class="section-header">Target Asset Allocation (Middle-Aged Investor — From Your Book)</div>
+  <div class="grid-2" style="margin-bottom:24px;">
+    <div class="card">
+      <table>
+        <thead><tr><th>Asset Class</th><th>Target %</th><th>Index Fund Provider Fund</th><th>Current Status</th></tr></thead>
+        <tbody>
+          <tr><td>Total US Stock Market</td><td class="card-positive">X%</td><td style="color:#888">VTI / VTSAX</td><td><span class="badge badge-red">Underweight</span></td></tr>
+          <tr><td>Total International</td><td class="card-positive">X%</td><td style="color:#888">VXUS / VTIAX</td><td><span class="badge badge-red">Underweight</span></td></tr>
+          <tr><td>REITs</td><td>X%</td><td style="color:#888">VNQ / VGSLX</td><td><span class="badge badge-red">None</span></td></tr>
+          <tr><td>Total Bond Market</td><td>X%</td><td style="color:#888">BND / VBTLX</td><td><span class="badge badge-red">None</span></td></tr>
+          <tr><td>Inflation-Protected (TIPS)</td><td>X%</td><td style="color:#888">SCHP / VAIPX</td><td><span class="badge badge-red">None</span></td></tr>
+        </tbody>
+      </table>
+      <div style="font-size:12px;color:#666;margin-top:12px;">Source: "A Middle-Aged Investor's Asset Allocation" from your book. At 37, you're at the transition from growth-focused to balanced. The X% bond/TIPS allocation is conservative for FIRE — many FIRE investors stay 80–X% equities until closer to retirement.</div>
+    </div>
+    <div class="card">
+      <div class="section-header">Tax Loss Harvesting — Brokerage App Losers</div>
+      <div style="font-size:13px;color:#888;margin-bottom:12px;">Sell these positions to realize losses. Offset gains and up to $X,XXX/yr of ordinary income. <strong style="color:#fbbf24;">Est. tax savings: ~$X,XXX</strong> at your X% combined rate. Repurchase similar (not identical) ETFs after 31 days to maintain exposure.</div>
+      <table>
+        <thead><tr><th>Stock</th><th>Loss</th><th>Action</th></tr></thead>
+        <tbody>
+          <tr><td>iQIYI (IQ)</td><td class="card-negative">−$X,XXX</td><td><span class="badge badge-red">Sell</span></td></tr>
+          <tr><td>Sea Limited (SE)</td><td class="card-negative">−$X,XXX</td><td><span class="badge badge-red">Sell</span></td></tr>
+          <tr><td>Unity Software (U)</td><td class="card-negative">−$X,XXX</td><td><span class="badge badge-red">Sell</span></td></tr>
+          <tr><td>JD.com (JD)</td><td class="card-negative">−$X,XXX</td><td><span class="badge badge-red">Sell</span></td></tr>
+          <tr><td>Constellation Brands (STZ)</td><td class="card-negative">−$X,XXX</td><td><span class="badge badge-yellow">Consider</span></td></tr>
+          <tr><td>Rivian (RIVN)</td><td class="card-negative">−$X,XXX</td><td><span class="badge badge-red">Sell</span></td></tr>
+          <tr><td>Block (XYZ)</td><td class="card-negative">−$X,XXX</td><td><span class="badge badge-yellow">Consider</span></td></tr>
+          <tr><td>SORRENTO (SRNE)</td><td class="card-negative">−$X,XXX</td><td><span class="badge badge-red">Sell (likely worthless)</span></td></tr>
+          <tr><td>+ 9 smaller positions</td><td class="card-negative">−$X,XXX</td><td><span class="badge badge-yellow">Review</span></td></tr>
+          <tr><td><strong>Total losses</strong></td><td class="card-negative"><strong>−$X,XXX</strong></td><td class="card-positive"><strong>~$X,XXX saved</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Key concepts explained simply -->
+  <div class="section-header">Key Concepts — Plain English</div>
+  <div class="grid-3">
+    <div class="card">
+      <div class="card-title">Backdoor Roth IRA</div>
+      <div style="font-size:13px;color:#c0c0e0;line-height:1.7;margin-top:8px;">
+        A legal workaround for high earners who exceed the Roth IRA income limit. You contribute to a Traditional IRA (no deduction at your income), then immediately convert it to Roth. Result: tax-free growth forever, just like a regular Roth. <strong style="color:#7c83fd;">Do this every January.</strong>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Advanced Roth Strategy</div>
+      <div style="font-size:13px;color:#c0c0e0;line-height:1.7;margin-top:8px;">
+        If Employer A's 401K plan allows after-tax contributions (beyond the $X,XXXK limit), you can contribute up to $X,XXXK more after-tax and then convert it to Roth inside the plan. This is the most powerful tax shelter available to high earners. <strong style="color:#7c83fd;">Check Employer A Your 401K Portal → Plan Details.</strong>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">HSA — The "Stealth IRA"</div>
+      <div style="font-size:13px;color:#c0c0e0;line-height:1.7;margin-top:8px;">
+        Health Savings Account = triple tax advantage: contributions are tax-deductible, grow tax-free, and withdrawals for medical expenses are tax-free. After 65, withdraw for anything penalty-free (like a Traditional IRA). If eligible, it beats both Roth and Traditional IRA. Requires an HDHP health plan. <strong style="color:#7c83fd;">2025 family limit: $X,XXX.</strong>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Tax Loss Harvesting</div>
+      <div style="font-size:13px;color:#c0c0e0;line-height:1.7;margin-top:8px;">
+        Selling investments at a loss to offset capital gains taxes. You can also deduct up to $X,XXX/yr against ordinary income. After 31 days, buy back a similar (not identical) fund to maintain your market exposure. You have ~$X,XXX in harvestable losses in Brokerage App right now.
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Pro-Rata Rule</div>
+      <div style="font-size:13px;color:#c0c0e0;line-height:1.7;margin-top:8px;">
+        The IRS treats all your Traditional IRA money as one pool when converting to Roth. If you have pre-tax Traditional IRA funds, part of your Backdoor Roth conversion becomes taxable. Solution: roll any pre-tax Traditional IRA into your 401K first, then do the backdoor. <strong style="color:#fbbf24;">Confirm Robo-Advisor account is Roth, not Traditional.</strong>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">X% Rule</div>
+      <div style="font-size:13px;color:#c0c0e0;line-height:1.7;margin-top:8px;">
+        A guideline saying you can safely withdraw X% of your portfolio annually in retirement without running out of money over 30 years. Your $X,XXXM target implies $X,XXXK/year. At your $X,XXXK retirement spend target, you need $X,XXXM. Some FIRE planners use X% for longer retirements (50+ years).
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ======== PAGE: DREAM RETIREMENT ======== -->
+<div id="page-retirement" class="page">
+  <div class="section-header">Dream Retirement — House by the Water Abroad</div>
+
+  <div style="background:linear-gradient(135deg,#0f1e30,#1a0f2e);border:1px solid #3a3a6a;border-radius:12px;padding:24px;margin-bottom:24px;text-align:center;">
+    <div style="font-size:22px;font-weight:800;color:#e0e0f0;margin-bottom:8px;">The Dream: Early Retirement Abroad 🌊</div>
+    <div style="font-size:15px;color:#a0a0c0;line-height:1.8;max-width:700px;margin:0 auto;">
+      You & Your Partner — waterfront home, second passport, Mediterranean or tropical lifestyle. Your $X,XXXM FIRE number goes <strong style="color:#4ade80;">2–3x further</strong> outside the US. At $X,XXXK/yr in Greece or Portugal, you'd live like you're spending $X,XXX–300K/yr in the US.
+    </div>
+  </div>
+
+  <!-- TOP PICKS SCORECARD -->
+  <div class="section-header">Top Destinations — Saville Family Score</div>
+  <div style="font-size:13px;color:#666;margin-bottom:16px;">Weighted for: healthcare (X%), visa/passport path (X%), cost of living (X%), English-friendliness/culture fit (X%), climate (X%)</div>
+
+  <div class="grid-3" style="margin-bottom:24px;">
+
+    <div class="card" style="border-color:#fbbf2477;background:linear-gradient(135deg,#1a1a2e,#2a1a0a);">
+      <div style="font-size:24px;margin-bottom:4px;">🇬🇷</div>
+      <div class="card-title">🥇 Greece — #1 Pick</div>
+      <div class="card-value" style="color:#fbbf24;">91.0</div>
+      <div class="card-sub">IL Score: 90.1 · Saville Score: 91.0</div>
+      <div style="margin-top:12px;font-size:13px;color:#c0c0e0;line-height:1.7;">
+        <strong>Why it wins for you:</strong> Greek islands = waterfront dream homes. Investment Visa at €250K–€500K. 7yr path to EU passport. $X,XXXK/yr lives like $X,XXXK. Incredible food, climate, culture.
+      </div>
+      <div style="margin-top:10px;">
+        <span class="badge badge-yellow">EU Passport path</span>
+        <span class="badge badge-green" style="margin-left:6px;">Waterfront</span>
+        <span class="badge badge-blue" style="margin-left:6px;">Healthcare 89</span>
+      </div>
+    </div>
+
+    <div class="card" style="border-color:#a78bfa77;background:linear-gradient(135deg,#1a1a2e,#1a0a2a);">
+      <div style="font-size:24px;margin-bottom:4px;">🇵🇹</div>
+      <div class="card-title">🥈 Portugal — Best for Families</div>
+      <div class="card-value" style="color:#a78bfa;">87.2</div>
+      <div class="card-sub">IL Score: 87.4 · Saville Score: 87.2</div>
+      <div style="margin-top:12px;font-size:13px;color:#c0c0e0;line-height:1.7;">
+        <strong>Why it's great for you:</strong> Safest country in Europe. Best EU healthcare (96). Coastal Region = stunning waterfront. D7 visa only needs $X,XXXK/mo passive income. 5yr path to EU passport.
+      </div>
+      <div style="margin-top:10px;">
+        <span class="badge badge-purple">Safest in Europe</span>
+        <span class="badge badge-green" style="margin-left:6px;">Healthcare 96</span>
+        <span class="badge badge-blue" style="margin-left:6px;">EU Passport</span>
+      </div>
+    </div>
+
+    <div class="card" style="border-color:#4ade8077;background:linear-gradient(135deg,#1a1a2e,#0f2a1a);">
+      <div style="font-size:24px;margin-bottom:4px;">🇮🇹</div>
+      <div class="card-title">🥉 Italy — La Dolce Vita</div>
+      <div class="card-value" style="color:#4ade80;">86.7</div>
+      <div class="card-sub">IL Score: 85.3 · Saville Score: 86.7</div>
+      <div style="margin-top:12px;font-size:13px;color:#c0c0e0;line-height:1.7;">
+        <strong>Hidden gem:</strong> Favorable Tax Regime on all foreign income — your $X,XXXK US investment income taxed at just X% instead of X%+. Coastal towns like Coastal Town, Coastal Town, Coastal Town. Residency Visa easy to get.
+      </div>
+      <div style="margin-top:10px;">
+        <span class="badge badge-yellow">Favorable Tax Regime</span>
+        <span class="badge badge-green" style="margin-left:6px;">EU Passport</span>
+        <span class="badge badge-blue" style="margin-left:6px;">Waterfront</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- FULL RANKINGS TABLE -->
+  <div class="grid-2" style="margin-bottom:24px;">
+    <div class="card">
+      <div class="section-header">Full 2026 International Living Rankings</div>
+      <table>
+        <thead><tr><th>#</th><th>Country</th><th>IL Score</th><th>Saville Score</th><th>Highlight</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>🇬🇷 Greece</td><td>90.1</td><td class="card-positive"><strong>91.0</strong></td><td>Coastal Regions, EU passport</td></tr>
+          <tr><td>2</td><td>🇵🇦 Panama</td><td>89.3</td><td class="card-positive">89.8</td><td>Easiest residency for Americans</td></tr>
+          <tr><td>3</td><td>🇨🇷 Costa Rica</td><td>87.6</td><td>87.5</td><td>Pensionado visa, biodiversity</td></tr>
+          <tr><td>4</td><td>🇵🇹 Portugal</td><td>87.4</td><td class="card-positive">87.2</td><td>Safest Europe, Coastal Region</td></tr>
+          <tr><td>5</td><td>🇲🇽 Mexico</td><td>87.3</td><td>86.6</td><td>Easiest visa, close to US</td></tr>
+          <tr><td>6</td><td>🇮🇹 Italy</td><td>85.3</td><td class="card-positive">86.7</td><td>Favorable Tax Regime on foreign income</td></tr>
+          <tr><td>7</td><td>🇪🇸 Spain</td><td>83.7</td><td>84.9</td><td>Costa del Sol, Barcelona</td></tr>
+          <tr><td>8</td><td>🇫🇷 France</td><td>84.4</td><td>84.1</td><td>Best healthcare in world (97)</td></tr>
+          <tr><td>9</td><td>🇹🇭 Thailand</td><td>80.0</td><td>80.3</td><td>Cheapest cost of living</td></tr>
+          <tr><td>10</td><td>🇪🇨 Ecuador</td><td>78.7</td><td>79.1</td><td>Pacific coast, low cost</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="section-header">Your $X,XXXK/yr Retirement Income — Purchasing Power Abroad</div>
+      <div style="font-size:13px;color:#888;margin-bottom:16px;">How much US lifestyle your $X,XXXK buys in each location</div>
+      <div id="col-bars"></div>
+    </div>
+  </div>
+
+  <!-- SECOND PASSPORT GUIDE -->
+  <div class="section-header">Second Passport / Residency Paths</div>
+  <div class="card" style="margin-bottom:24px;">
+    <table>
+      <thead><tr><th>Country</th><th>Visa Type</th><th>Requirement</th><th>Path to Citizenship</th><th>Fit for You</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>🇵🇹 Portugal</td>
+          <td>D7 Passive Income</td>
+          <td>~$X,XXX/mo passive income</td>
+          <td class="card-positive">5 years → EU passport</td>
+          <td><span class="badge badge-green">Best EU option</span></td>
+        </tr>
+        <tr>
+          <td>🇬🇷 Greece</td>
+          <td>Investment Visa</td>
+          <td>€250K–€500K real estate</td>
+          <td class="card-positive">7 years → EU passport</td>
+          <td><span class="badge badge-green">Island waterfront</span></td>
+        </tr>
+        <tr>
+          <td>🇮🇹 Italy</td>
+          <td>Elective Residency</td>
+          <td>€31K/yr passive income</td>
+          <td class="card-warning">10 years → EU passport</td>
+          <td><span class="badge badge-yellow">X% tax deal</span></td>
+        </tr>
+        <tr>
+          <td>🇵🇦 Panama</td>
+          <td>Residency Visa</td>
+          <td>$X,XXXK bank deposit + job/business</td>
+          <td class="card-positive">3–5 years → passport</td>
+          <td><span class="badge badge-blue">Easiest overall</span></td>
+        </tr>
+        <tr>
+          <td>🇲🇽 Mexico</td>
+          <td>Temporary Resident</td>
+          <td>$X,XXX/mo income</td>
+          <td class="card-positive">4 years → permanent</td>
+          <td><span class="badge badge-blue">Closest, easiest</span></td>
+        </tr>
+        <tr>
+          <td>🇨🇷 Costa Rica</td>
+          <td>Pensionado / Rentista</td>
+          <td>$X,XXX–$X,XXX/mo</td>
+          <td class="card-positive">7 years → passport</td>
+          <td><span class="badge badge-blue">Nature + beaches</span></td>
+        </tr>
+      </tbody>
+    </table>
+    <div style="margin-top:14px;font-size:13px;color:#888;line-height:1.7;">
+      <strong style="color:#c0c0e0">EU passport value:</strong> Greece, Portugal, or Italy citizenship gives you the right to live, work, and travel freely across all 27 EU countries. For a child born after you get citizenship, they may qualify automatically — giving your baby a second passport from birth.
+    </div>
+  </div>
+
+  <!-- FINANCIAL ROADMAP TO THE DREAM -->
+  <div class="section-header">The Financial Roadmap to Your Dream</div>
+  <div class="card" style="margin-bottom:24px;">
+    <div class="chart-container">
+      <canvas id="chart-retirement-path"></canvas>
+    </div>
+  </div>
+
+  <div class="grid-3">
+    <div class="card" style="border-color:#3730a355;">
+      <div class="card-title">Phase 1: Now → XXXX</div>
+      <div style="font-size:13px;color:#c0c0e0;line-height:1.8;margin-top:8px;">
+        ✅ Pay off CC debt (April 2026)<br/>
+        ✅ Max Backdoor Roth IRA both<br/>
+        ✅ Max Partner's 401K<br/>
+        ✅ Build emergency fund to $X,XXXK<br/>
+        ✅ Start baby, open 529<br/>
+        ✅ Research Greece & Portugal<br/>
+        ✅ Take a scouting trip abroad
+      </div>
+    </div>
+    <div class="card" style="border-color:#7c83fd55;">
+      <div class="card-title">Phase 2: XXXX → XXXX</div>
+      <div style="font-size:13px;color:#c0c0e0;line-height:1.8;margin-top:8px;">
+        📈 Portfolio reaches ~$X,XXXM+<br/>
+        🏠 Decide: buy in Your City or stay flexible<br/>
+        🌍 Begin residency application process<br/>
+        💼 Consider part-time / consulting work<br/>
+        🏦 Shift to income-generating investments<br/>
+        👶 Kids in school — stable home base
+      </div>
+    </div>
+    <div class="card" style="border-color:#4ade8055;">
+      <div class="card-title">Phase 3: XXXX+ — FIRE 🎉</div>
+      <div style="font-size:13px;color:#c0c0e0;line-height:1.8;margin-top:8px;">
+        🌊 House by the water (Greece or Portugal)<br/>
+        🛂 Second passport obtained<br/>
+        💰 $X,XXXK/yr = $X,XXX-300K US lifestyle<br/>
+        ✈️ Travel freely across Europe<br/>
+        👨‍👩‍👧 Kids grow up bilingual, world-aware<br/>
+        🏖️ You & Your Partner — mission accomplished
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ======== PAGE: ALLOCATION ======== -->
+<div id="page-allocation" class="page">
+  <div class="section-header">Asset Allocation Tracker</div>
+
+  <div class="alert">
+    <div class="alert-icon">⚠️</div>
+    <div class="alert-text">
+      <strong>Concentration Warning:</strong> Employer A stock (NKE) represents ~X% of your investable portfolio ($X,XXX), plus Your entire salary depends on Employer A. Total Employer A exposure (human capital + financial) is significant. Advisors generally recommend keeping any single employer stock under X% of investable assets — you are near this limit. Employee Stock Purchase Plan (ESPP) proceeds should be diversified.
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="section-header">Current vs. Target Allocation</div>
+      <div id="alloc-bars"></div>
+    </div>
+    <div class="card">
+      <div class="chart-container-sm">
+        <canvas id="chart-alloc"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top: 20px;">
+    <div class="section-header">Rebalancing Suggestions</div>
+    <table>
+      <thead>
+        <tr><th>Asset Class</th><th>Current %</th><th>Target %</th><th>Difference</th><th>Action</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>US Equities (broad index)</td><td>X%</td><td>X%</td><td class="card-negative">−X%</td><td><span class="badge badge-red">Increase</span></td></tr>
+        <tr><td>International Equities</td><td>~X%</td><td>X%</td><td class="card-negative">−X%</td><td><span class="badge badge-red">Increase</span></td></tr>
+        <tr><td>Retirement Accounts (401K + Roth)</td><td>X%</td><td>X%</td><td class="card-positive">+X%</td><td><span class="badge badge-green">Good</span></td></tr>
+        <tr><td>Individual Stocks (NKE, WMT, W)</td><td>X%</td><td>X%</td><td class="card-warning">+X%</td><td><span class="badge badge-yellow">Reduce</span></td></tr>
+        <tr><td>Cryptocurrency</td><td>X%</td><td>X%</td><td class="card-warning">+X%</td><td><span class="badge badge-yellow">Watch</span></td></tr>
+        <tr><td>Cash & Savings</td><td>X%</td><td>X%</td><td class="card-negative">−X%</td><td><span class="badge badge-blue">Build Emergency Fund</span></td></tr>
+        <tr><td>House Fund</td><td>X%</td><td>Earmarked</td><td>—</td><td><span class="badge badge-purple">Keep in HYSA</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ======== PAGE: ACCOUNTS ======== -->
+<div id="page-accounts" class="page">
+  <div style="display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap;">
+    <button onclick="document.getElementById('section-mike').scrollIntoView({behavior:'smooth'})" style="background:#1a1a2e;border:1px solid #2a2a4a;color:#7c83fd;padding:7px 16px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;">↓ Your Accounts</button>
+    <button onclick="document.getElementById('section-hadley').scrollIntoView({behavior:'smooth'})" style="background:#1a1a2e;border:1px solid #2a2a4a;color:#7c83fd;padding:7px 16px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;">↓ Partner's Accounts</button>
+    <button onclick="document.getElementById('section-crypto').scrollIntoView({behavior:'smooth'})" style="background:#1a1a2e;border:1px solid #2a2a4a;color:#7c83fd;padding:7px 16px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;">↓ Crypto</button>
+    <button onclick="document.getElementById('section-robinhood').scrollIntoView({behavior:'smooth'})" style="background:#22d3ee22;border:1px solid #22d3ee55;color:#22d3ee;padding:7px 16px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;">↓ Brokerage App ($X,XXXK)</button>
+  </div>
+  <div class="section-header">Account Ledger — All Holdings</div>
+  <div class="grid-2">
+    <div class="card">
+      <div id="section-mike" class="section-header">Your Accounts</div>
+      <table>
+        <thead><tr><th>Account</th><th>Institution</th><th>Type</th><th>Value</th></tr></thead>
+        <tbody>
+          <tr><td>Employer A 401(k)</td><td>Brokerage A</td><td><span class="badge badge-blue">401K</span></td><td>$X,XXX</td></tr>
+          <tr><td>Employer C 401(k)</td><td>Brokerage B</td><td><span class="badge badge-blue">401K</span></td><td>$X,XXX</td></tr>
+          <tr><td>Employer B 401(k)</td><td>Brokerage A</td><td><span class="badge badge-blue">401K</span></td><td>$X,XXX</td></tr>
+          <tr><td>Roth IRA</td><td>Index Fund Provider</td><td><span class="badge badge-purple">Roth</span></td><td>$X,XXX</td></tr>
+          <tr><td>Roth IRA</td><td>Robo-Advisor</td><td><span class="badge badge-purple">Roth</span></td><td>$X,XXX</td></tr>
+          <tr><td>Brokerage</td><td>Index Fund Provider</td><td><span class="badge badge-green">Taxable</span></td><td>$X,XXX</td></tr>
+          <tr><td>Taxable</td><td>Robo-Advisor</td><td><span class="badge badge-green">Taxable</span></td><td>$X,XXX</td></tr>
+          <tr><td>Employer A Stock (Employee Stock Purchase Plan (ESPP))</td><td>Brokerage A</td><td><span class="badge badge-yellow">Stock</span></td><td>$X,XXX</td></tr>
+          <tr><td>Employer C Stock</td><td>Brokerage B</td><td><span class="badge badge-yellow">Stock</span></td><td>$X,XXX</td></tr>
+          <tr><td>Employer B Stock</td><td>Brokerage C</td><td><span class="badge badge-yellow">Stock</span></td><td>$X,XXX</td></tr>
+          <tr><td>Brokerage App Stocks</td><td>Brokerage App</td><td><span class="badge badge-green">Taxable</span></td><td>$X,XXX</td></tr>
+          <tr><td>Brokerage App Crypto</td><td>Brokerage App</td><td><span class="badge" style="background:#083344;color:#22d3ee">Crypto</span></td><td>$X,XXX</td></tr>
+          <tr><td><strong>You Total</strong></td><td></td><td></td><td><strong>$X,XXX</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="card">
+      <div id="section-hadley" class="section-header">Partner's Accounts</div>
+      <table>
+        <thead><tr><th>Account</th><th>Institution</th><th>Type</th><th>Value</th></tr></thead>
+        <tbody>
+          <tr><td>Employer B 401(k)</td><td>Brokerage A</td><td><span class="badge badge-blue">401K</span></td><td>$X,XXX</td></tr>
+          <tr><td>Payroll Platform 401(k)</td><td>Payroll Platform</td><td><span class="badge badge-blue">401K</span></td><td>$X,XXX</td></tr>
+          <tr><td>Employer D 401(k)</td><td>Employer D</td><td><span class="badge badge-blue">401K</span></td><td>$X,XXX</td></tr>
+          <tr><td>Roth IRA</td><td>Index Fund Provider</td><td><span class="badge badge-purple">Roth</span></td><td>$X,XXX</td></tr>
+          <tr><td><strong>Partner Total</strong></td><td></td><td></td><td><strong>$X,XXX</strong></td></tr>
+        </tbody>
+      </table>
+      <div class="section-header" style="margin-top: 24px;">Cash & Savings</div>
+      <table>
+        <thead><tr><th>Institution</th><th>Type</th><th>Balance</th></tr></thead>
+        <tbody>
+          <tr><td>HYSA Provider</td><td>HYSA</td><td>$X,XXX</td></tr>
+          <tr><td>Credit Union A</td><td>Checking</td><td>$X,XXX</td></tr>
+          <tr><td>Credit Union A</td><td>CD</td><td>$X,XXX</td></tr>
+          <tr><td>Brokerage C</td><td>Checking</td><td>$X,XXX</td></tr>
+          <tr><td>Credit Union B</td><td>Savings</td><td>$X,XXX</td></tr>
+          <tr><td>Credit Union B</td><td>Checking</td><td>$X,XXX</td></tr>
+          <tr><td>Online Savings Bank</td><td>Savings</td><td>$X,XXX</td></tr>
+          <tr><td>Credit Union A</td><td>Savings</td><td>$X,XXX</td></tr>
+          <tr><td><strong>Cash Total</strong></td><td></td><td><strong>$X,XXX</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="grid-2" style="margin-top: 20px;">
+    <div class="card">
+      <div id="section-crypto" class="section-header">Cryptocurrency</div>
+      <table>
+        <thead><tr><th>Asset</th><th>Custodian</th><th>Units</th><th>Value</th></tr></thead>
+        <tbody>
+          <tr><td>Bitcoin (BTC)</td><td>Crypto Exchange</td><td>0.424818</td><td>$X,XXX</td></tr>
+          <tr><td>Bitcoin (BTC)</td><td>Hard Wallet</td><td>est.</td><td>$X,XXX</td></tr>
+          <tr><td>Ethereum (ETH)</td><td>Crypto Exchange</td><td>7.42</td><td>$X,XXX</td></tr>
+          <tr><td>XRP</td><td>Crypto Exchange</td><td>341.56</td><td>$X,XXX</td></tr>
+          <tr><td>Solana (SOL)</td><td>Crypto Exchange</td><td>4.44</td><td>$X,XXX</td></tr>
+          <tr><td>Tron (TRX)</td><td>Crypto Wallet</td><td>4,810.24</td><td>$X,XXX</td></tr>
+          <tr><td>Cardano (ADA)</td><td>Crypto Exchange</td><td>538.80</td><td>$X,XXX</td></tr>
+          <tr><td><strong>Crypto Total</strong></td><td></td><td></td><td><strong>$X,XXX</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="card">
+      <div class="section-header">Special Items</div>
+      <table>
+        <thead><tr><th>Item</th><th>Status</th><th>Value</th></tr></thead>
+        <tbody>
+          <tr><td>House Fund (family member gift)</td><td><span class="badge badge-purple">Earmarked</span></td><td>$X,XXX</td></tr>
+          <tr><td>Credit Card Debt</td><td><span class="badge badge-red">Pay Off</span></td><td>−$X,XXX</td></tr>
+        </tbody>
+      </table>
+      <div style="margin-top: 24px;">
+        <div class="card-title">Net Worth Summary</div>
+        <table>
+          <tbody>
+            <tr><td>Total Assets (prior)</td><td>$X,XXX</td></tr>
+            <tr><td>Brokerage App (newly added)</td><td class="card-positive">+$X,XXX</td></tr>
+            <tr><td>Total Assets</td><td><strong>$X,XXX</strong></td></tr>
+            <tr><td>Total Debt</td><td class="card-negative"><strong>−$X,XXX</strong></td></tr>
+            <tr><td><strong>Net Worth</strong></td><td><strong class="card-positive">$X,XXX</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top: 20px;">
+    <div id="section-robinhood" class="section-header">Brokerage App Brokerage — Stocks ($X,XXX)</div>
+    <div class="alert" style="margin-bottom: 16px;">
+      <div class="alert-icon">⚠️</div>
+      <div class="alert-text"><strong>50 individual positions</strong> — highly concentrated in META (X%) and SHOP (X%). Top 5 holdings = X% of account. Consider consolidating winners into broad index funds (VOO/VTI).</div>
+    </div>
+    <table>
+      <thead><tr><th>Stock</th><th>Symbol</th><th>Shares</th><th>Price</th><th>Avg Cost</th><th>Total Return</th><th>Equity</th></tr></thead>
+      <tbody>
+        <tr><td>Meta Platforms</td><td>META</td><td>33.663</td><td>$X,XXX</td><td>$X,XXX</td><td class="card-positive">+$X,XXX</td><td>$X,XXX</td></tr>
+        <tr><td>Shopify</td><td>SHOP</td><td>163.391</td><td>$X,XXX</td><td>$X,XXX</td><td class="card-positive">+$X,XXX</td><td>$X,XXX</td></tr>
+        <tr><td>AMD</td><td>AMD</td><td>50</td><td>$X,XXX</td><td>$X,XXX</td><td class="card-positive">+$X,XXX</td><td>$X,XXX</td></tr>
+        <tr><td>Microsoft</td><td>MSFT</td><td>19.31</td><td>$X,XXX</td><td>$X,XXX</td><td class="card-positive">+$X,XXX</td><td>$X,XXX</td></tr>
+        <tr><td>JPMorgan Chase</td><td>JPM</td><td>18.1</td><td>$X,XXX</td><td>$X,XXX</td><td class="card-positive">+$X,XXX</td><td>$X,XXX</td></tr>
+        <tr><td>Aurinia Pharmaceuticals</td><td>AUPH</td><td>307.329</td><td>$X,XXX</td><td>$X,XXX</td><td class="card-positive">+$X,XXX</td><td>$X,XXX</td></tr>
+        <tr><td>Waste Management</td><td>WM</td><td>14.861</td><td>$X,XXX</td><td>$X,XXX</td><td class="card-positive">+$X,XXX</td><td>$X,XXX</td></tr>
+        <tr><td>Constellation Brands</td><td>STZ</td><td>19.91</td><td>$X,XXX</td><td>$X,XXX</td><td class="card-negative">−$X,XXX</td><td>$X,XXX</td></tr>
+        <tr><td>Applied Materials</td><td>AMAT</td><td>7.921</td><td>$X,XXX</td><td>$X,XXX</td><td class="card-positive">+$X,XXX</td><td>$X,XXX</td></tr>
+        <tr><td>Acushnet</td><td>GOLF</td><td>21.878</td><td>$X,XXX</td><td>$X,XXX</td><td class="card-positive">+$X,XXX</td><td>$X,XXX</td></tr>
+        <tr><td>Rocket Companies</td><td>RKT</td><td>120.304</td><td>$X,XXX</td><td>$X,XXX</td><td class="card-negative">−$X,XXX</td><td>$X,XXX</td></tr>
+        <tr><td>Block</td><td>XYZ</td><td>29.013</td><td>$X,XXX</td><td>$X,XXX</td><td class="card-negative">−$X,XXX</td><td>$X,XXX</td></tr>
+        <tr><td>iShares MSCI India ETF</td><td>INDA</td><td>31.076</td><td>$X,XXX</td><td>$X,XXX</td><td class="card-positive">+$X,XXX</td><td>$X,XXX</td></tr>
+        <tr><td>JD.com</td><td>JD</td><td>55.757</td><td>$X,XXX</td><td>$X,XXX</td><td class="card-negative">−$X,XXX</td><td>$X,XXX</td></tr>
+        <tr><td>Sea Limited</td><td>SE</td><td>12.729</td><td>$X,XXX</td><td>$X,XXX</td><td class="card-negative">−$X,XXX</td><td>$X,XXX</td></tr>
+        <tr><td>IonQ</td><td>IONQ</td><td>33.474</td><td>$X,XXX</td><td>$X,XXX</td><td class="card-positive">+$X,XXX</td><td>$X,XXX</td></tr>
+        <tr><td>Wrap Technologies</td><td>WRAP</td><td>671.846</td><td>$X,XXX</td><td>$X,XXX</td><td class="card-negative">−$X,XXX</td><td>$X,XXX</td></tr>
+        <tr><td>Archer Aviation</td><td>ACHR</td><td>155.898</td><td>$X,XXX</td><td>$X,XXX</td><td class="card-positive">+$X,XXX</td><td>$X,XXX</td></tr>
+        <tr><td>CrowdStrike</td><td>CRWD</td><td>5.673</td><td>$X,XXX</td><td>$X,XXX</td><td class="card-positive">+$X,XXX</td><td>$X,XXX</td></tr>
+        <tr><td>Global X IoT ETF</td><td>SNSR</td><td>46.178</td><td>$X,XXX</td><td>$X,XXX</td><td class="card-positive">+$X,XXX</td><td>$X,XXX</td></tr>
+        <tr style="color:#555"><td colspan="6"><em>+ 30 additional smaller positions</em></td><td>$X,XXX</td></tr>
+        <tr><td><strong>Brokerage App Stock Total</strong></td><td></td><td></td><td></td><td></td><td class="card-positive"><strong>+$X,XXX</strong></td><td><strong>$X,XXX</strong></td></tr>
+      </tbody>
+    </table>
+    <div class="section-header" style="margin-top: 24px;">Brokerage App Crypto ($X,XXX)</div>
+    <table>
+      <thead><tr><th>Asset</th><th>Symbol</th><th>Units</th><th>Equity</th></tr></thead>
+      <tbody>
+        <tr><td>Bitcoin</td><td>BTC</td><td>0.03141663</td><td>$X,XXX</td></tr>
+        <tr><td>Ethereum</td><td>ETH</td><td>0.166311</td><td>$X,XXX</td></tr>
+        <tr><td>Dogecoin</td><td>DOGE</td><td>999.81</td><td>$X,XXX</td></tr>
+        <tr><td>Bitcoin Cash</td><td>BCH</td><td>0.08220439</td><td>$X,XXX</td></tr>
+        <tr><td>Hyperliquid</td><td>HYPE</td><td>1.1728</td><td>$X,XXX</td></tr>
+        <tr><td>Other (SOL, SHIB, TRUMP, XRP, AVAX)</td><td>—</td><td>—</td><td>$X,XXX</td></tr>
+        <tr><td><strong>Brokerage App Crypto Total</strong></td><td></td><td></td><td><strong>$X,XXX</strong></td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+// =========================================================
+// DATA & STATE
+// =========================================================
+const CURRENT_YEAR = 2026;
+const MIKE_AGE_BASE = 35;  // turns [Age] in May 2026
+const HADLEY_AGE_BASE = 35; // turns 37 this week
+
+let state = {
+  nw: 1000000,      // updated: +$X,XXX Brokerage App (stocks + crypto)
+  savings: 50000,   // confirmed: $X,XXX 401K + $X,XXX Employee Stock Purchase Plan (ESPP) shares acquired
+  spend: 100000,
+  returnRate: 0.07,
+  inflation: 0.03,
+  swr: 0.04,
+  mikeAge: 35,
+  hadleyAge: 35,
+};
+
+let activeScenarios = { conservative: true, base: true, optimistic: true };
+let chartInstances = {};
+
+// =========================================================
+// NAVIGATION
+// =========================================================
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  event.target.classList.add('active');
+  // Lazy-render charts when page becomes visible
+  if (id === 'projection') renderProjectionChart();
+  if (id === 'scenarios') renderScenarioChart();
+  if (id === 'house') renderHouseChart();
+  if (id === 'baby') renderBabyCharts();
+  if (id === 'retirement') renderRetirementCharts();
+  if (id === 'allocation') renderAllocChart();
+}
+
+// =========================================================
+// FIRE MATH
+// =========================================================
+function calcFIREYear(nw, savings, spend, returnRate, swr, mikeAge) {
+  const target = spend / swr;
+  let portfolio = nw;
+  let years = 0;
+  while (portfolio < target && years < 80) {
+    portfolio = portfolio * (1 + returnRate) + savings;
+    years++;
+  }
+  const fireYear = CURRENT_YEAR + years;
+  const mikeFIREAge = mikeAge + years;
+  const hadleyFIREAge = (mikeAge - MIKE_AGE_BASE + HADLEY_AGE_BASE) + years + (state.hadleyAge - HADLEY_AGE_BASE);
+  return { fireYear, years, target, mikeFIREAge, hadleyFIREAge: state.hadleyAge + years };
+}
+
+function buildProjection(nw, savings, returnRate, years) {
+  const rows = [];
+  let portfolio = nw;
+  for (let i = 0; i <= years; i++) {
+    const growth = i === 0 ? 0 : portfolio / (1 + returnRate) * returnRate;
+    rows.push({
+      year: CURRENT_YEAR + i,
+      mikeAge: state.mikeAge + i,
+      portfolio: Math.round(portfolio),
+      growth: Math.round(growth),
+      contribution: i === 0 ? 0 : savings,
+    });
+    portfolio = portfolio * (1 + returnRate) + savings;
+  }
+  return rows;
+}
+
+// =========================================================
+// RECALCULATE (called by calculator page)
+// =========================================================
+function recalculate() {
+  state.nw = parseFloat(document.getElementById('inp-nw').value) || state.nw;
+  state.savings = parseFloat(document.getElementById('inp-savings').value) || state.savings;
+  state.spend = parseFloat(document.getElementById('inp-spend').value) || state.spend;
+  state.returnRate = parseFloat(document.getElementById('inp-return').value) / 100;
+  state.inflation = parseFloat(document.getElementById('inp-inflation').value) / 100;
+  state.swr = parseFloat(document.getElementById('inp-swr').value) / 100;
+  state.mikeAge = parseFloat(document.getElementById('inp-age-mike').value) || state.mikeAge;
+  state.hadleyAge = parseFloat(document.getElementById('inp-age-hadley').value) || state.hadleyAge;
+
+  const { fireYear, years, target, mikeFIREAge, hadleyFIREAge } = calcFIREYear(
+    state.nw, state.savings, state.spend, state.returnRate, state.swr, state.mikeAge
+  );
+
+  document.getElementById('calc-fire-year').textContent = fireYear;
+  document.getElementById('calc-fire-age').textContent = `You ${mikeFIREAge}, Partner ${hadleyFIREAge}`;
+  document.getElementById('calc-years').textContent = years;
+  document.getElementById('calc-fire-number').textContent = '$' + target.toLocaleString(undefined, {maximumFractionDigits: 0});
+  document.getElementById('calc-fire-number-sub').textContent = `$${(state.spend/1000).toFixed(0)}K ÷ ${(state.swr*100).toFixed(1)}% SWR`;
+  document.getElementById('calc-real-return').textContent = ((state.returnRate - state.inflation) * 100).toFixed(1) + '%';
+  document.getElementById('calc-monthly').textContent = '$' + Math.round(state.savings / 12).toLocaleString();
+
+  // Update dashboard card too
+  document.getElementById('dash-fire-year').textContent = fireYear;
+  document.getElementById('dash-fire-age').textContent = `You ${mikeFIREAge}, Partner ${hadleyFIREAge}`;
+
+  // Refresh projection chart if visible
+  renderProjectionChart();
+  renderScenarioChart();
+}
+
+// =========================================================
+// CHART: DONUT (dashboard)
+// =========================================================
+function renderDonut() {
+  const ctx = document.getElementById('chart-donut').getContext('2d');
+  if (chartInstances.donut) chartInstances.donut.destroy();
+  chartInstances.donut = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: ['401(k)', 'Roth IRA', 'Brokerage (Index Fund Provider/Robo-Advisor)', 'Brokerage App Stocks', 'Individual Stocks (NKE/WMT/W)', 'Crypto', 'Cash', 'House Fund'],
+      datasets: [{
+        data: [443288, 75287, 87562, 110378, 96869, 57212, 13678, 200000],
+        backgroundColor: ['#7c83fd','#a78bfa','#4ade80','#22d3ee','#fbbf24','#f87171','#60a5fa','#34d399'],
+        borderWidth: 0,
+        hoverOffset: 8,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'right', labels: { color: '#c0c0e0', boxWidth: 12, padding: 14, font: { size: 12 } } },
+        tooltip: {
+          callbacks: {
+            label: ctx => ` $${ctx.raw.toLocaleString()} (${((ctx.raw/1084274)*100).toFixed(1)}%)`
+          }
+        }
+      },
+      cutout: 'X%',
+    }
+  });
+}
+
+// =========================================================
+// CHART: GROWTH (dashboard mini)
+// =========================================================
+function renderGrowthChart() {
+  const ctx = document.getElementById('chart-growth').getContext('2d');
+  if (chartInstances.growth) chartInstances.growth.destroy();
+  const rows = buildProjection(state.nw, state.savings, state.returnRate, 20);
+  chartInstances.growth = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: rows.map(r => r.year),
+      datasets: [
+        {
+          label: 'Portfolio Value',
+          data: rows.map(r => r.portfolio),
+          borderColor: '#7c83fd',
+          backgroundColor: 'rgba(124,131,253,0.15)',
+          fill: true,
+          tension: 0.4,
+          borderWidth: 2,
+          pointRadius: 0,
+        },
+        {
+          label: 'FIRE Target',
+          data: rows.map(() => state.spend / state.swr),
+          borderColor: '#4ade80',
+          borderDash: [6, 4],
+          borderWidth: 2,
+          pointRadius: 0,
+          fill: false,
+        }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { labels: { color: '#c0c0e0', font: { size: 12 } } },
+        tooltip: { callbacks: { label: ctx => ` $${ctx.raw.toLocaleString(undefined, {maximumFractionDigits: 0})}` } }
+      },
+      scales: {
+        x: { ticks: { color: '#666' }, grid: { color: '#1e1e38' } },
+        y: { ticks: { color: '#666', callback: v => '$' + (v/1000).toFixed(0) + 'K' }, grid: { color: '#1e1e38' } }
+      }
+    }
+  });
+}
+
+// =========================================================
+// CHART: PROJECTION (projection page)
+// =========================================================
+function renderProjectionChart() {
+  const ctx = document.getElementById('chart-projection').getContext('2d');
+  if (chartInstances.projection) chartInstances.projection.destroy();
+  const { years } = calcFIREYear(state.nw, state.savings, state.spend, state.returnRate, state.swr, state.mikeAge);
+  const displayYears = Math.min(years + 5, 35);
+  const rows = buildProjection(state.nw, state.savings, state.returnRate, displayYears);
+  const target = state.spend / state.swr;
+
+  chartInstances.projection = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: rows.map(r => r.year),
+      datasets: [
+        {
+          label: 'Contributions',
+          data: rows.map(r => r.contribution),
+          backgroundColor: '#3730a3',
+          stack: 'stack',
+        },
+        {
+          label: 'Investment Growth',
+          data: rows.map(r => r.growth),
+          backgroundColor: '#7c83fd',
+          stack: 'stack',
+        },
+        {
+          label: 'FIRE Target',
+          data: rows.map(() => target),
+          type: 'line',
+          borderColor: '#4ade80',
+          borderDash: [6, 4],
+          borderWidth: 2,
+          pointRadius: 0,
+          fill: false,
+        }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { labels: { color: '#c0c0e0', font: { size: 12 } } },
+        tooltip: { callbacks: { label: ctx => ` $${ctx.raw.toLocaleString(undefined, {maximumFractionDigits: 0})}` } }
+      },
+      scales: {
+        x: { stacked: true, ticks: { color: '#666' }, grid: { color: '#1e1e38' } },
+        y: { stacked: false, ticks: { color: '#666', callback: v => '$' + (v/1000).toFixed(0) + 'K' }, grid: { color: '#1e1e38' } }
+      }
+    }
+  });
+
+  // Populate table
+  const tbody = document.getElementById('projection-table');
+  const allRows = buildProjection(state.nw, state.savings, state.returnRate, displayYears);
+  tbody.innerHTML = allRows.map(r => {
+    const pct = ((r.portfolio / target) * 100).toFixed(1);
+    const badge = r.portfolio >= target
+      ? '<span class="badge badge-green">FIRE!</span>'
+      : `<span class="badge badge-blue">${pct}%</span>`;
+    return `<tr>
+      <td>${r.year}</td>
+      <td>${r.mikeAge}</td>
+      <td>$${r.portfolio.toLocaleString()}</td>
+      <td class="card-positive">${r.growth > 0 ? '+$' + r.growth.toLocaleString() : '—'}</td>
+      <td>${r.contribution > 0 ? '$' + r.contribution.toLocaleString() : '—'}</td>
+      <td>${badge}</td>
+    </tr>`;
+  }).join('');
+}
+
+// =========================================================
+// CHART: SCENARIOS
+// =========================================================
+function toggleScenario(name, el) {
+  activeScenarios[name] = !activeScenarios[name];
+  el.classList.toggle('active', activeScenarios[name]);
+  renderScenarioChart();
+}
+
+function renderScenarioChart() {
+  const ctx = document.getElementById('chart-scenarios').getContext('2d');
+  if (chartInstances.scenarios) chartInstances.scenarios.destroy();
+
+  const scenarioDefs = [
+    { key: 'conservative', label: 'Conservative (X%)', rate: 0.05, color: '#4ade80' },
+    { key: 'base',         label: 'Base (X%)',          rate: 0.07, color: '#7c83fd' },
+    { key: 'optimistic',   label: 'Optimistic (X%)',    rate: 0.09, color: '#fbbf24' },
+  ];
+
+  const years = 35;
+  const target = state.spend / state.swr;
+  const allYears = Array.from({length: years + 1}, (_, i) => CURRENT_YEAR + i);
+
+  const datasets = scenarioDefs
+    .filter(s => activeScenarios[s.key])
+    .map(s => {
+      const rows = buildProjection(state.nw, state.savings, s.rate, years);
+      const { fireYear } = calcFIREYear(state.nw, state.savings, state.spend, s.rate, state.swr, state.mikeAge);
+      const { mikeFIREAge } = calcFIREYear(state.nw, state.savings, state.spend, s.rate, state.swr, state.mikeAge);
+      const hadleyFIREAge = state.hadleyAge + (fireYear - CURRENT_YEAR);
+      document.getElementById('scen-' + s.key + '-year').textContent = fireYear;
+      document.getElementById('scen-' + s.key + '-age').textContent = `You ${mikeFIREAge}, Partner ${hadleyFIREAge}`;
+      return {
+        label: s.label,
+        data: rows.map(r => r.portfolio),
+        borderColor: s.color,
+        backgroundColor: s.color + '18',
+        fill: false,
+        tension: 0.4,
+        borderWidth: 2,
+        pointRadius: 0,
+      };
+    });
+
+  datasets.push({
+    label: 'FIRE Target',
+    data: allYears.map(() => target),
+    borderColor: '#f87171',
+    borderDash: [6, 4],
+    borderWidth: 2,
+    pointRadius: 0,
+    fill: false,
+  });
+
+  chartInstances.scenarios = new Chart(ctx, {
+    type: 'line',
+    data: { labels: allYears, datasets },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { labels: { color: '#c0c0e0', font: { size: 12 } } },
+        tooltip: { callbacks: { label: ctx => ` $${ctx.raw.toLocaleString(undefined, {maximumFractionDigits: 0})}` } }
+      },
+      scales: {
+        x: { ticks: { color: '#666' }, grid: { color: '#1e1e38' } },
+        y: { ticks: { color: '#666', callback: v => '$' + (v >= 1000000 ? (v/1000000).toFixed(1) + 'M' : (v/1000).toFixed(0) + 'K') }, grid: { color: '#1e1e38' } }
+      }
+    }
+  });
+}
+
+// =========================================================
+// CHART: ALLOCATION
+// =========================================================
+function renderBabyCharts() {
+  // ── Cash flow waterfall (early child phase) ──
+  const cfCtx = document.getElementById('chart-baby-cashflow').getContext('2d');
+  if (chartInstances.babyCF) chartInstances.babyCF.destroy();
+  chartInstances.babyCF = new Chart(cfCtx, {
+    type: 'bar',
+    data: {
+      labels: ['Take-Home', 'Base Spend', 'Daycare', 'Food/Formula', 'Health', 'Clothing', 'Misc', 'Surplus'],
+      datasets: [{
+        data: [13612, -7000, -2800, -600, -400, -200, -300, 2312],
+        backgroundColor: [
+          '#4ade80','#f87171','#fbbf24','#fbbf24','#fbbf24','#fbbf24','#fbbf24','#4ade80'
+        ],
+        borderRadius: 6,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: ctx => ` $${Math.abs(ctx.raw).toLocaleString()}/mo` } }
+      },
+      scales: {
+        x: { ticks: { color: '#888', font: { size: 11 } }, grid: { color: '#1e1e38' } },
+        y: { ticks: { color: '#666', callback: v => '$' + (v/1000).toFixed(0) + 'K' }, grid: { color: '#1e1e38' } }
+      }
+    }
+  });
+
+  // ── FIRE timeline with vs without child ──
+  const fireCtx = document.getElementById('chart-baby-fire').getContext('2d');
+  if (chartInstances.babyFire) chartInstances.babyFire.destroy();
+
+  const years = Array.from({length: 20}, (_, i) => 2026 + i);
+  const r = 0.07;
+  let nwBase = state.nw, nwChild = state.nw;
+  const baseData = [], childData = [];
+
+  for (let i = 0; i < 20; i++) {
+    baseData.push(Math.round(nwBase));
+    childData.push(Math.round(nwChild));
+    nwBase = nwBase * (1 + r) + state.savings;
+    // Child savings reduction: infant 2yr, toddler 3yr, then school age cheaper
+    let childSavings;
+    if (i < 2)      childSavings = state.savings - 4300 * 12;
+    else if (i < 5) childSavings = state.savings - 3450 * 12;
+    else            childSavings = state.savings - 1400 * 12;
+    nwChild = nwChild * (1 + r) + Math.max(childSavings, 0);
+  }
+
+  const fireTarget = state.spend / state.swr;
+  chartInstances.babyFire = new Chart(fireCtx, {
+    type: 'line',
+    data: {
+      labels: years,
+      datasets: [
+        {
+          label: 'No children',
+          data: baseData,
+          borderColor: '#4ade80',
+          backgroundColor: 'rgba(74,222,128,0.08)',
+          fill: true, tension: 0.4, borderWidth: 2, pointRadius: 0,
+        },
+        {
+          label: 'With 1 child',
+          data: childData,
+          borderColor: '#fbbf24',
+          backgroundColor: 'rgba(251,191,36,0.08)',
+          fill: true, tension: 0.4, borderWidth: 2, pointRadius: 0,
+        },
+        {
+          label: 'FIRE Target ($X,XXXM)',
+          data: years.map(() => fireTarget),
+          borderColor: '#f87171',
+          borderDash: [6, 4],
+          borderWidth: 2,
+          pointRadius: 0,
+          fill: false,
+        }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { labels: { color: '#c0c0e0', font: { size: 12 } } },
+        tooltip: { callbacks: { label: ctx => ` $${ctx.raw.toLocaleString(undefined, {maximumFractionDigits:0})}` } }
+      },
+      scales: {
+        x: { ticks: { color: '#666' }, grid: { color: '#1e1e38' } },
+        y: { ticks: { color: '#666', callback: v => '$' + (v >= 1e6 ? (v/1e6).toFixed(1)+'M' : (v/1000).toFixed(0)+'K') }, grid: { color: '#1e1e38' } }
+      }
+    }
+  });
+}
+
+function renderRetirementCharts() {
+  // ── Cost of living bars ──
+  const colData = [
+    { place: 'Greek Islands', multiplier: 2.22 },
+    { place: 'Mexico', multiplier: 2.22 },
+    { place: 'Coastal Region, Portugal', multiplier: 2.00 },
+    { place: 'Coastal Italy', multiplier: 2.00 },
+    { place: 'Athens, Greece', multiplier: 1.92 },
+    { place: 'Lisbon, Portugal', multiplier: 1.82 },
+    { place: 'Costa Rica', multiplier: 1.82 },
+    { place: 'Panama City', multiplier: 1.67 },
+    { place: 'US (Your City, State)', multiplier: 1.00 },
+  ];
+  const maxMult = 2.22;
+  document.getElementById('col-bars').innerHTML = colData.map(d => {
+    const dollars = Math.round(135000 * d.multiplier);
+    const pct = (d.multiplier / maxMult * 100).toFixed(0);
+    const color = d.place.includes('US') ? '#666' : d.multiplier >= 2 ? '#4ade80' : '#7c83fd';
+    return `<div class="alloc-row">
+      <div class="alloc-label">
+        <span style="color:#c0c0e0">${d.place}</span>
+        <span style="color:${color};font-weight:600">$${dollars.toLocaleString()}/yr equivalent</span>
+      </div>
+      <div class="alloc-bar">
+        <div class="alloc-fill" style="width:${pct}%;background:${color}"></div>
+      </div>
+    </div>`;
+  }).join('');
+
+  // ── Portfolio path to FIRE with retirement abroad overlay ──
+  const ctx = document.getElementById('chart-retirement-path').getContext('2d');
+  if (chartInstances.retirePath) chartInstances.retirePath.destroy();
+  const years = Array.from({length: 22}, (_, i) => 2026 + i);
+  const r = 0.07;
+  let nw = state.nw;
+  const portfolioData = [];
+  for (let i = 0; i < 22; i++) {
+    portfolioData.push(Math.round(nw));
+    let savings = state.savings;
+    if (i < 2) savings -= 4300 * 12;      // infant costs
+    else if (i < 5) savings -= 3450 * 12; // toddler
+    else savings -= 1400 * 12;            // school age
+    nw = nw * (1 + r) + Math.max(savings, 0);
+  }
+  const fireTarget = state.spend / state.swr;
+
+  // Key milestones
+  const milestones = [
+    { year: 2026, label: 'CC Debt Paid', color: '#f87171' },
+    { year: XXXX, label: 'Scouting Trip', color: '#fbbf24' },
+    { year: XXXX, label: 'Residency App', color: '#a78bfa' },
+    { year: XXXX, label: '🎉 FIRE Abroad', color: '#4ade80' },
+  ];
+
+  chartInstances.retirePath = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: years,
+      datasets: [
+        {
+          label: 'Portfolio Value',
+          data: portfolioData,
+          borderColor: '#7c83fd',
+          backgroundColor: 'rgba(124,131,253,0.12)',
+          fill: true, tension: 0.4, borderWidth: 3,
+          pointRadius: years.map(y => milestones.find(m => m.year === y) ? 8 : 0),
+          pointBackgroundColor: years.map(y => {
+            const m = milestones.find(m => m.year === y);
+            return m ? m.color : '#7c83fd';
+          }),
+          pointBorderColor: '#0f0f1a',
+          pointBorderWidth: 2,
+        },
+        {
+          label: 'FIRE Target',
+          data: years.map(() => fireTarget),
+          borderColor: '#4ade80',
+          borderDash: [8, 4],
+          borderWidth: 2,
+          pointRadius: 0,
+          fill: false,
+        }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { labels: { color: '#c0c0e0', font: { size: 12 } } },
+        tooltip: {
+          callbacks: {
+            label: ctx => ` $${ctx.raw.toLocaleString(undefined, {maximumFractionDigits:0})}`,
+            afterBody: (items) => {
+              const year = parseInt(items[0].label);
+              const m = milestones.find(m => m.year === year);
+              return m ? [`📍 ${m.label}`] : [];
+            }
+          }
+        }
+      },
+      scales: {
+        x: { ticks: { color: '#666' }, grid: { color: '#1e1e38' } },
+        y: {
+          ticks: { color: '#666', callback: v => '$' + (v >= 1e6 ? (v/1e6).toFixed(1)+'M' : (v/1000).toFixed(0)+'K') },
+          grid: { color: '#1e1e38' }
+        }
+      }
+    }
+  });
+}
+
+function renderHouseChart() {
+  const ctx = document.getElementById('chart-house').getContext('2d');
+  if (chartInstances.house) chartInstances.house.destroy();
+  const years = Array.from({length: 18}, (_, i) => 2026 + i);
+  // $X,XXXK invested at X%
+  const invested = years.map((_, i) => Math.round(200000 * 1.07**i));
+  // $X,XXXK as down payment: home value at X% appreciation
+  const homeValue = years.map((_, i) => Math.round(850000 * 1.03**i));
+  // Home equity = home value - remaining mortgage balance
+  const loanAmt = 650000, r = 0.0599/12, n = 360;
+  const homeEquity = years.map((_, i) => {
+    const months = i * 12;
+    const balance = months === 0 ? loanAmt : loanAmt * ((1+r)**n - (1+r)**months) / ((1+r)**n - 1);
+    return Math.round(850000 * 1.03**i - balance);
+  });
+
+  chartInstances.house = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: years,
+      datasets: [
+        {
+          label: '$X,XXXK invested @ X% (renting)',
+          data: invested,
+          borderColor: '#4ade80',
+          backgroundColor: 'rgba(74,222,128,0.1)',
+          fill: true, tension: 0.4, borderWidth: 2, pointRadius: 0,
+        },
+        {
+          label: 'Home equity (buying @ X% appreciation)',
+          data: homeEquity,
+          borderColor: '#7c83fd',
+          backgroundColor: 'rgba(124,131,253,0.1)',
+          fill: true, tension: 0.4, borderWidth: 2, pointRadius: 0,
+        },
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { labels: { color: '#c0c0e0', font: { size: 12 } } },
+        tooltip: { callbacks: { label: ctx => ` $${ctx.raw.toLocaleString()}` } }
+      },
+      scales: {
+        x: { ticks: { color: '#666' }, grid: { color: '#1e1e38' } },
+        y: { ticks: { color: '#666', callback: v => '$' + (v/1000).toFixed(0) + 'K' }, grid: { color: '#1e1e38' } }
+      }
+    }
+  });
+}
+
+function renderAllocChart() {
+  const ctx = document.getElementById('chart-alloc').getContext('2d');
+  if (chartInstances.alloc) chartInstances.alloc.destroy();
+  chartInstances.alloc = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: ['401K/Roth', 'Brokerage', 'Stocks', 'Crypto', 'Cash', 'House Fund'],
+      datasets: [
+        {
+          label: 'Current %',
+          data: [54.2, 9.2, 10.1, 5.7, 1.4, 20.9],
+          backgroundColor: '#7c83fd',
+        },
+        {
+          label: 'Target %',
+          data: [40, 50, 5, 5, 5, 0],
+          backgroundColor: '#4ade80',
+        }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { labels: { color: '#c0c0e0', font: { size: 12 } } },
+      },
+      scales: {
+        x: { ticks: { color: '#666' }, grid: { color: '#1e1e38' } },
+        y: { ticks: { color: '#666', callback: v => v + '%' }, grid: { color: '#1e1e38' }, max: 60 }
+      }
+    }
+  });
+
+  // Allocation bars
+  const allocItems = [
+    { label: 'Retirement Accounts (401K + Roth)', current: 54.2, target: 40, color: '#7c83fd' },
+    { label: 'Individual Stocks (NKE, WMT, W)', current: 10.1, target: 5, color: '#fbbf24' },
+    { label: 'Brokerage (broad index)', current: 9.2, target: 50, color: '#4ade80' },
+    { label: 'Cryptocurrency', current: 5.7, target: 5, color: '#f87171' },
+    { label: 'Cash', current: 1.4, target: 5, color: '#60a5fa' },
+    { label: 'House Fund (earmarked)', current: 20.9, target: 0, color: '#34d399' },
+  ];
+  document.getElementById('alloc-bars').innerHTML = allocItems.map(item => `
+    <div class="alloc-row">
+      <div class="alloc-label">
+        <span>${item.label}</span>
+        <span style="color: ${item.color}">${item.current}% <span style="color:#555">/ target ${item.target}%</span></span>
+      </div>
+      <div class="alloc-bar">
+        <div class="alloc-fill" style="width: ${Math.min(item.current / 60 * 100, 100)}%; background: ${item.color}"></div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// =========================================================
+// INIT
+// =========================================================
+window.addEventListener('DOMContentLoaded', () => {
+  recalculate();
+  renderDonut();
+  renderGrowthChart();
+});
+</script>
+</body>
+</html>
