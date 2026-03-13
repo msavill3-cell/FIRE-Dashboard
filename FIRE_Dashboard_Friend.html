@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Saville Family FIRE Dashboard</title>
+  <title>My FIRE Dashboard</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -123,7 +123,7 @@
 <body>
 
 <nav>
-  <div class="logo">Saville <span>FIRE</span></div>
+  <div class="logo">My <span>FIRE</span></div>
   <div class="nav-tabs">
     <div class="nav-tab active" onclick="showPage('dashboard')">Dashboard</div>
     <div class="nav-tab" onclick="showPage('income')">Income</div>
@@ -392,11 +392,11 @@
       </div>
       <div class="input-group">
         <label>Your Current Age</label>
-        <input type="number" id="inp-age-mike" value="37" />
+        <input type="number" id="inp-age-you" value="35" />
       </div>
       <div class="input-group">
         <label>Partner's Current Age</label>
-        <input type="number" id="inp-age-hadley" value="37" />
+        <input type="number" id="inp-age-partner" value="35" />
       </div>
       <div class="input-group" style="align-items: flex-end;">
         <label>&nbsp;</label>
@@ -1096,7 +1096,7 @@
   </div>
 
   <!-- TOP PICKS SCORECARD -->
-  <div class="section-header">Top Destinations — Saville Family Score</div>
+  <div class="section-header">Top Destinations — My Score</div>
   <div style="font-size:13px;color:#666;margin-bottom:16px;">Weighted for: healthcare (X%), visa/passport path (X%), cost of living (X%), English-friendliness/culture fit (X%), climate (X%)</div>
 
   <div class="grid-3" style="margin-bottom:24px;">
@@ -1105,7 +1105,7 @@
       <div style="font-size:24px;margin-bottom:4px;">🇬🇷</div>
       <div class="card-title">🥇 Greece — #1 Pick</div>
       <div class="card-value" style="color:#fbbf24;">91.0</div>
-      <div class="card-sub">IL Score: 90.1 · Saville Score: 91.0</div>
+      <div class="card-sub">IL Score: 90.1 · My Score: 91.0</div>
       <div style="margin-top:12px;font-size:13px;color:#c0c0e0;line-height:1.7;">
         <strong>Why it wins for you:</strong> Greek islands = waterfront dream homes. Investment Visa at €250K–€500K. 7yr path to EU passport. $X,XXXK/yr lives like $X,XXXK. Incredible food, climate, culture.
       </div>
@@ -1120,7 +1120,7 @@
       <div style="font-size:24px;margin-bottom:4px;">🇵🇹</div>
       <div class="card-title">🥈 Portugal — Best for Families</div>
       <div class="card-value" style="color:#a78bfa;">87.2</div>
-      <div class="card-sub">IL Score: 87.4 · Saville Score: 87.2</div>
+      <div class="card-sub">IL Score: 87.4 · My Score: 87.2</div>
       <div style="margin-top:12px;font-size:13px;color:#c0c0e0;line-height:1.7;">
         <strong>Why it's great for you:</strong> Safest country in Europe. Best EU healthcare (96). Coastal Region = stunning waterfront. D7 visa only needs $X,XXXK/mo passive income. 5yr path to EU passport.
       </div>
@@ -1135,7 +1135,7 @@
       <div style="font-size:24px;margin-bottom:4px;">🇮🇹</div>
       <div class="card-title">🥉 Italy — La Dolce Vita</div>
       <div class="card-value" style="color:#4ade80;">86.7</div>
-      <div class="card-sub">IL Score: 85.3 · Saville Score: 86.7</div>
+      <div class="card-sub">IL Score: 85.3 · My Score: 86.7</div>
       <div style="margin-top:12px;font-size:13px;color:#c0c0e0;line-height:1.7;">
         <strong>Hidden gem:</strong> Favorable Tax Regime on all foreign income — your $X,XXXK US investment income taxed at just X% instead of X%+. Coastal towns like Coastal Town, Coastal Town, Coastal Town. Residency Visa easy to get.
       </div>
@@ -1153,7 +1153,7 @@
     <div class="card">
       <div class="section-header">Full 2026 International Living Rankings</div>
       <table>
-        <thead><tr><th>#</th><th>Country</th><th>IL Score</th><th>Saville Score</th><th>Highlight</th></tr></thead>
+        <thead><tr><th>#</th><th>Country</th><th>IL Score</th><th>My Score</th><th>Highlight</th></tr></thead>
         <tbody>
           <tr><td>1</td><td>🇬🇷 Greece</td><td>90.1</td><td class="card-positive"><strong>91.0</strong></td><td>Coastal Regions, EU passport</td></tr>
           <tr><td>2</td><td>🇵🇦 Panama</td><td>89.3</td><td class="card-positive">89.8</td><td>Easiest residency for Americans</td></tr>
@@ -1322,15 +1322,15 @@
 <!-- ======== PAGE: ACCOUNTS ======== -->
 <div id="page-accounts" class="page">
   <div style="display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap;">
-    <button onclick="document.getElementById('section-mike').scrollIntoView({behavior:'smooth'})" style="background:#1a1a2e;border:1px solid #2a2a4a;color:#7c83fd;padding:7px 16px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;">↓ Your Accounts</button>
-    <button onclick="document.getElementById('section-hadley').scrollIntoView({behavior:'smooth'})" style="background:#1a1a2e;border:1px solid #2a2a4a;color:#7c83fd;padding:7px 16px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;">↓ Partner's Accounts</button>
+    <button onclick="document.getElementById('section-you').scrollIntoView({behavior:'smooth'})" style="background:#1a1a2e;border:1px solid #2a2a4a;color:#7c83fd;padding:7px 16px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;">↓ Your Accounts</button>
+    <button onclick="document.getElementById('section-partner').scrollIntoView({behavior:'smooth'})" style="background:#1a1a2e;border:1px solid #2a2a4a;color:#7c83fd;padding:7px 16px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;">↓ Partner's Accounts</button>
     <button onclick="document.getElementById('section-crypto').scrollIntoView({behavior:'smooth'})" style="background:#1a1a2e;border:1px solid #2a2a4a;color:#7c83fd;padding:7px 16px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;">↓ Crypto</button>
     <button onclick="document.getElementById('section-robinhood').scrollIntoView({behavior:'smooth'})" style="background:#22d3ee22;border:1px solid #22d3ee55;color:#22d3ee;padding:7px 16px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;">↓ Brokerage App ($X,XXXK)</button>
   </div>
   <div class="section-header">Account Ledger — All Holdings</div>
   <div class="grid-2">
     <div class="card">
-      <div id="section-mike" class="section-header">Your Accounts</div>
+      <div id="section-you" class="section-header">Your Accounts</div>
       <table>
         <thead><tr><th>Account</th><th>Institution</th><th>Type</th><th>Value</th></tr></thead>
         <tbody>
@@ -1351,7 +1351,7 @@
       </table>
     </div>
     <div class="card">
-      <div id="section-hadley" class="section-header">Partner's Accounts</div>
+      <div id="section-partner" class="section-header">Partner's Accounts</div>
       <table>
         <thead><tr><th>Account</th><th>Institution</th><th>Type</th><th>Value</th></tr></thead>
         <tbody>
@@ -1475,8 +1475,8 @@
 // DATA & STATE
 // =========================================================
 const CURRENT_YEAR = 2026;
-const MIKE_AGE_BASE = 35;  // turns [Age] in May 2026
-const HADLEY_AGE_BASE = 35; // turns 37 this week
+const YOU_AGE_BASE = 35;  // turns [Age] in May 2026
+const PARTNER_AGE_BASE = 35; 
 
 let state = {
   nw: 1000000,      // updated: +$X,XXX Brokerage App (stocks + crypto)
@@ -1485,8 +1485,8 @@ let state = {
   returnRate: 0.07,
   inflation: 0.03,
   swr: 0.04,
-  mikeAge: 35,
-  hadleyAge: 35,
+  youAge: 35,
+  partnerAge: 35,
 };
 
 let activeScenarios = { conservative: true, base: true, optimistic: true };
@@ -1512,7 +1512,7 @@ function showPage(id) {
 // =========================================================
 // FIRE MATH
 // =========================================================
-function calcFIREYear(nw, savings, spend, returnRate, swr, mikeAge) {
+function calcFIREYear(nw, savings, spend, returnRate, swr, youAge) {
   const target = spend / swr;
   let portfolio = nw;
   let years = 0;
@@ -1521,9 +1521,9 @@ function calcFIREYear(nw, savings, spend, returnRate, swr, mikeAge) {
     years++;
   }
   const fireYear = CURRENT_YEAR + years;
-  const mikeFIREAge = mikeAge + years;
-  const hadleyFIREAge = (mikeAge - MIKE_AGE_BASE + HADLEY_AGE_BASE) + years + (state.hadleyAge - HADLEY_AGE_BASE);
-  return { fireYear, years, target, mikeFIREAge, hadleyFIREAge: state.hadleyAge + years };
+  const youFIREAge = youAge + years;
+  const partnerFIREAge = (youAge - YOU_AGE_BASE + PARTNER_AGE_BASE) + years + (state.partnerAge - PARTNER_AGE_BASE);
+  return { fireYear, years, target, youFIREAge, partnerFIREAge: state.partnerAge + years };
 }
 
 function buildProjection(nw, savings, returnRate, years) {
@@ -1533,7 +1533,7 @@ function buildProjection(nw, savings, returnRate, years) {
     const growth = i === 0 ? 0 : portfolio / (1 + returnRate) * returnRate;
     rows.push({
       year: CURRENT_YEAR + i,
-      mikeAge: state.mikeAge + i,
+      youAge: state.youAge + i,
       portfolio: Math.round(portfolio),
       growth: Math.round(growth),
       contribution: i === 0 ? 0 : savings,
@@ -1553,15 +1553,15 @@ function recalculate() {
   state.returnRate = parseFloat(document.getElementById('inp-return').value) / 100;
   state.inflation = parseFloat(document.getElementById('inp-inflation').value) / 100;
   state.swr = parseFloat(document.getElementById('inp-swr').value) / 100;
-  state.mikeAge = parseFloat(document.getElementById('inp-age-mike').value) || state.mikeAge;
-  state.hadleyAge = parseFloat(document.getElementById('inp-age-hadley').value) || state.hadleyAge;
+  state.youAge = parseFloat(document.getElementById('inp-age-you').value) || state.youAge;
+  state.partnerAge = parseFloat(document.getElementById('inp-age-partner').value) || state.partnerAge;
 
-  const { fireYear, years, target, mikeFIREAge, hadleyFIREAge } = calcFIREYear(
-    state.nw, state.savings, state.spend, state.returnRate, state.swr, state.mikeAge
+  const { fireYear, years, target, youFIREAge, partnerFIREAge } = calcFIREYear(
+    state.nw, state.savings, state.spend, state.returnRate, state.swr, state.youAge
   );
 
   document.getElementById('calc-fire-year').textContent = fireYear;
-  document.getElementById('calc-fire-age').textContent = `You ${mikeFIREAge}, Partner ${hadleyFIREAge}`;
+  document.getElementById('calc-fire-age').textContent = `You ${youFIREAge}, Partner ${partnerFIREAge}`;
   document.getElementById('calc-years').textContent = years;
   document.getElementById('calc-fire-number').textContent = '$' + target.toLocaleString(undefined, {maximumFractionDigits: 0});
   document.getElementById('calc-fire-number-sub').textContent = `$${(state.spend/1000).toFixed(0)}K ÷ ${(state.swr*100).toFixed(1)}% SWR`;
@@ -1570,7 +1570,7 @@ function recalculate() {
 
   // Update dashboard card too
   document.getElementById('dash-fire-year').textContent = fireYear;
-  document.getElementById('dash-fire-age').textContent = `You ${mikeFIREAge}, Partner ${hadleyFIREAge}`;
+  document.getElementById('dash-fire-age').textContent = `You ${youFIREAge}, Partner ${partnerFIREAge}`;
 
   // Refresh projection chart if visible
   renderProjectionChart();
@@ -1662,7 +1662,7 @@ function renderGrowthChart() {
 function renderProjectionChart() {
   const ctx = document.getElementById('chart-projection').getContext('2d');
   if (chartInstances.projection) chartInstances.projection.destroy();
-  const { years } = calcFIREYear(state.nw, state.savings, state.spend, state.returnRate, state.swr, state.mikeAge);
+  const { years } = calcFIREYear(state.nw, state.savings, state.spend, state.returnRate, state.swr, state.youAge);
   const displayYears = Math.min(years + 5, 35);
   const rows = buildProjection(state.nw, state.savings, state.returnRate, displayYears);
   const target = state.spend / state.swr;
@@ -1719,7 +1719,7 @@ function renderProjectionChart() {
       : `<span class="badge badge-blue">${pct}%</span>`;
     return `<tr>
       <td>${r.year}</td>
-      <td>${r.mikeAge}</td>
+      <td>${r.youAge}</td>
       <td>$${r.portfolio.toLocaleString()}</td>
       <td class="card-positive">${r.growth > 0 ? '+$' + r.growth.toLocaleString() : '—'}</td>
       <td>${r.contribution > 0 ? '$' + r.contribution.toLocaleString() : '—'}</td>
@@ -1755,11 +1755,11 @@ function renderScenarioChart() {
     .filter(s => activeScenarios[s.key])
     .map(s => {
       const rows = buildProjection(state.nw, state.savings, s.rate, years);
-      const { fireYear } = calcFIREYear(state.nw, state.savings, state.spend, s.rate, state.swr, state.mikeAge);
-      const { mikeFIREAge } = calcFIREYear(state.nw, state.savings, state.spend, s.rate, state.swr, state.mikeAge);
-      const hadleyFIREAge = state.hadleyAge + (fireYear - CURRENT_YEAR);
+      const { fireYear } = calcFIREYear(state.nw, state.savings, state.spend, s.rate, state.swr, state.youAge);
+      const { youFIREAge } = calcFIREYear(state.nw, state.savings, state.spend, s.rate, state.swr, state.youAge);
+      const partnerFIREAge = state.partnerAge + (fireYear - CURRENT_YEAR);
       document.getElementById('scen-' + s.key + '-year').textContent = fireYear;
-      document.getElementById('scen-' + s.key + '-age').textContent = `You ${mikeFIREAge}, Partner ${hadleyFIREAge}`;
+      document.getElementById('scen-' + s.key + '-age').textContent = `You ${youFIREAge}, Partner ${partnerFIREAge}`;
       return {
         label: s.label,
         data: rows.map(r => r.portfolio),
